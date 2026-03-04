@@ -2,7 +2,7 @@
 
 ## Checkliste
 
-> **Stand:** 2026-03-03 | Phase 0 + 5 abgeschlossen | **Kein Breaking Change** für eedc-homeassistant
+> **Stand:** 2026-03-04 | Phase 0 + 1 + 2 + 5 abgeschlossen | **Kein Breaking Change** für eedc-homeassistant
 
 ### Voraussetzungen
 
@@ -35,7 +35,7 @@
   - [x] 0.5d Core-Features: `/api/anlagen`, `/api/stats`, `/api/scheduler`, `/api/health` → alle OK
   - [x] 0.5e `docker-compose up` ✓ Container läuft, App erreichbar auf Port 8099
 
-### Phase 1: CSV-Import mit Parser-Plugin-System (braucht: Phase 0) 🔧 in Arbeit
+### Phase 1: CSV-Import mit Parser-Plugin-System ✅
 
 Branch: `feature/portal-import`
 
@@ -45,7 +45,7 @@ Branch: `feature/portal-import`
   - [x] 1.1c `backend/services/import_parsers/registry.py` – Parser Factory + `list_parsers()`
   - [x] 1.1d `backend/services/import_parsers/sma_sunny_portal.py` – SMA Parser (Classic + ennexOS)
 - [x] 1.2 API-Routen
-  - [x] 1.2a `backend/api/routes/data_import.py` – NEU (Upload + Parse Endpoints)
+  - [x] 1.2a `backend/api/routes/data_import.py` – NEU (Upload + Parse + Apply Endpoints)
   - [x] 1.2b `backend/main.py` – Import-Router registrieren
 - [x] 1.3 Frontend
   - [x] 1.3a `frontend/src/api/portalImport.ts` – NEU: API Client
@@ -53,38 +53,41 @@ Branch: `feature/portal-import`
   - [x] 1.3c `frontend/src/App.tsx` – Route hinzufügen
   - [x] 1.3d `SubTabs.tsx` – Portal-Import Tab in Daten-Gruppe
 - [x] 1.4 Verifizierung Phase 1
-  - [x] 1.4a `GET /api/portal-import/parsers` → SMA Sunny Portal in Liste
+  - [x] 1.4a `GET /api/portal-import/parsers` → 3 Parser in Liste
   - [x] 1.4b CSV-Upload → Vorschau mit erkannten Monatswerten (echte ennexOS-CSV getestet)
-  - [ ] 1.4c Übernahme → Monatsdaten korrekt befüllt (End-to-End-Test offen)
+  - [x] 1.4c E2E-Test: Übernahme → Monatsdaten korrekt befüllt (SMA WebConnect getestet)
   - [x] 1.4d Fehlermeldung bei falschem Format / fehlendem Hersteller
-- [ ] 1.5 Erweiterungen (offen)
-  - [ ] 1.5a Hinweis-Screenshot für SMA ennexOS Anleitung einbinden
-  - [ ] 1.5b Personalisierter Post-Import-Workflow (→ siehe Feature-Ideen)
-  - [ ] 1.5c SMA ECharger Wallbox CSV-Parser (eigener Parser, eigenes Format)
+- [x] 1.5 Erweiterungen
+  - [x] 1.5a Hilfe-Screenshot `public/help/sma-ennexos-energiebilanz.png` abgelegt
+  - [ ] 1.5b Personalisierter Post-Import-Workflow (→ Phase 3 / Feature-Ideen)
+  - [x] 1.5c SMA ECharger Wallbox CSV-Parser (`sma_echarger.py`)
+  - [x] 1.5d EVCC Ladevorgangs-CSV-Parser (`evcc.py`) – Session-Aggregation pro Monat
 
-### Phase 2: SMA ennexOS Local API Connector (braucht: Phase 1)
+**Registrierte Parser (3):** `sma_sunny_portal` (PV+Netz+Batterie), `sma_echarger` (Wallbox), `evcc` (Wallbox)
 
-- [ ] 2.1 Connector-Architektur
-  - [ ] 2.1a `backend/services/connectors/__init__.py` – Package Init
-  - [ ] 2.1b `backend/services/connectors/base.py` – ABC `DeviceConnector` + Dataclasses
-  - [ ] 2.1c `backend/services/connectors/registry.py` – Connector Factory
-  - [ ] 2.1d `backend/services/connectors/sma_ennexos_local.py` – SMA ennexOS Implementation
-- [ ] 2.2 Datenmodell
-  - [ ] 2.2a `backend/models/anlage.py` – Feld `connector_config` (JSON, nullable)
-  - [ ] 2.2b `backend/core/database.py` – Migration registrieren
-- [ ] 2.3 API-Routen
-  - [ ] 2.3a `backend/api/routes/connector.py` – NEU (Connect + Fetch Endpoints)
-  - [ ] 2.3b `backend/main.py` – Connector-Router registrieren
-- [ ] 2.4 Frontend
-  - [ ] 2.4a `frontend/src/api/connector.ts` – NEU: API Client
-  - [ ] 2.4b `frontend/src/pages/ConnectorSetupWizard.tsx` – NEU: Setup-Wizard
-  - [ ] 2.4c Integration in DataImportWizard (Tab: "Manuell" / "Automatisch")
-- [ ] 2.5 Verifizierung Phase 2
-  - [ ] 2.5a Verbindung zum Tripower X über IP herstellen
-  - [ ] 2.5b Authentifizierung via ennexOS OAuth2 (lokaler JWT)
-  - [ ] 2.5c Kumulative kWh-Zähler auslesen (PV, Netz, Batterie)
-  - [ ] 2.5d Monatsdifferenz berechnen und als Vorschlag anzeigen
-  - [ ] 2.5e Fehlerbehandlung: WR nicht erreichbar, Auth fehlgeschlagen
+### Phase 2: SMA ennexOS Local API Connector ✅
+
+- [x] 2.1 Connector-Architektur
+  - [x] 2.1a `backend/services/connectors/__init__.py` – Package Init
+  - [x] 2.1b `backend/services/connectors/base.py` – ABC `DeviceConnector` + Dataclasses
+  - [x] 2.1c `backend/services/connectors/registry.py` – Connector Factory
+  - [x] 2.1d `backend/services/connectors/sma_ennexos.py` – SMA ennexOS Implementation
+  - [x] 2.1e `backend/services/connectors/sma_webconnect.py` – SMA WebConnect (ältere Geräte)
+- [x] 2.2 Datenmodell
+  - [x] 2.2a `backend/models/anlage.py` – Feld `connector_config` (JSON, nullable)
+  - [x] 2.2b Automatische Migration via SQLAlchemy
+- [x] 2.3 API-Routen
+  - [x] 2.3a `backend/api/routes/connector.py` – NEU (Test, Setup, Status, Fetch, Disconnect)
+  - [x] 2.3b `backend/main.py` – Connector-Router registriert
+- [x] 2.4 Frontend
+  - [x] 2.4a `frontend/src/api/connector.ts` – NEU: API Client
+  - [x] 2.4b `frontend/src/pages/ConnectorSetupWizard.tsx` – NEU: Setup-Wizard
+- [x] 2.5 Verifizierung Phase 2
+  - [x] 2.5a Sunny Tripower 10.0 SE via WebConnect → alle 5 Felder ✓
+  - [x] 2.5b SMA Wallbox EVC22 + Energy Meter via ennexOS → EM-Werte ✓
+  - [x] 2.5c Credential-Sanitization im JSON-Export implementiert
+
+**Registrierte Connectors (2):** `sma_ennexos` (Tripower X, Wallbox EVC), `sma_webconnect` (Sunny Boy, Tripower SE)
 
 ### Phase 3: Monatsdaten-Prefill Integration (braucht: Phase 1 oder 2)
 
