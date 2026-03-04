@@ -1,16 +1,17 @@
-# EEDC Standalone + Cloud-Provider-Integration
+# EEDC Standalone – Datenquellen-Integration
 
 ## Checkliste
 
-> **Stand:** 2026-02-28 | Phase 0 + 5 abgeschlossen | **Kein Breaking Change** für eedc-homeassistant
+> **Stand:** 2026-03-03 | Phase 0 + 5 abgeschlossen | **Kein Breaking Change** für eedc-homeassistant
 
 ### Voraussetzungen
 
-- [x] SMA Developer Portal registrieren (developer.sma.de) → Antwort ausstehend
 - [x] GitHub: Altes eedc Repo → `eedc-archive` umbenannt
-- [ ] SMA Sandbox-Credentials erhalten (client_id / client_secret)
+- [x] Neues `eedc` Repo erstellt (supernova1963/eedc)
+- [x] Subtree-Integration in eedc-homeassistant
+- [ ] SMA ennexOS Modbus aktivieren (Wechselrichter Web-UI → Externe Kommunikation)
 
-### Phase 0: Repo-Restrukturierung
+### Phase 0: Repo-Restrukturierung ✅
 
 - [x] 0.1 Altes `eedc` Repo zu `eedc-archive` umbenennen
 - [x] 0.2 Neues `eedc` Repo erstellen (supernova1963/eedc)
@@ -34,75 +35,89 @@
   - [x] 0.5d Core-Features: `/api/anlagen`, `/api/stats`, `/api/scheduler`, `/api/health` → alle OK
   - [x] 0.5e `docker-compose up` ✓ Container läuft, App erreichbar auf Port 8099
 
-### Phase 1: SMA Client Foundation (braucht: Phase 0 + SMA Credentials)
+### Phase 1: CSV-Import mit Parser-Plugin-System (braucht: Phase 0) 🔧 in Arbeit
 
-- [ ] 1.1 Datenmodell
-  - [ ] 1.1a `backend/models/anlage.py` – Feld `cloud_provider_config` (JSON, nullable)
-  - [ ] 1.1b `backend/core/database.py` – Migration registrieren
-- [ ] 1.2 Provider-Package
-  - [ ] 1.2a `backend/services/cloud_providers/__init__.py` – Package Init
-  - [ ] 1.2b `backend/services/cloud_providers/base.py` – ABC + Dataclasses
-  - [ ] 1.2c `backend/services/cloud_providers/registry.py` – Provider Factory
-  - [ ] 1.2d `backend/services/cloud_providers/token_manager.py` – Token-Refresh
-  - [ ] 1.2e `backend/services/cloud_providers/sma_ennexos.py` – SMA Implementation
-- [ ] 1.3 API-Routen
-  - [ ] 1.3a `backend/api/routes/cloud_provider.py` – NEU (Auth + Status Endpoints)
-  - [ ] 1.3b `backend/main.py` – Cloud-Router registrieren
-- [ ] 1.4 Verifizierung Phase 1
-  - [ ] 1.4a `GET /api/cloud/providers` → SMA ennexOS in Liste
-  - [ ] 1.4b OAuth2-Flow mit SMA Sandbox erfolgreich
-  - [ ] 1.4c Token-Refresh funktioniert
-  - [ ] 1.4d Verbindungsstatus korrekt angezeigt
+Branch: `feature/portal-import`
 
-### Phase 2: System Discovery + Smart Setup Wizard (braucht: Phase 1)
+- [x] 1.1 Parser-Architektur
+  - [x] 1.1a `backend/services/import_parsers/__init__.py` – Package Init
+  - [x] 1.1b `backend/services/import_parsers/base.py` – ABC `PortalExportParser` + Dataclasses
+  - [x] 1.1c `backend/services/import_parsers/registry.py` – Parser Factory + `list_parsers()`
+  - [x] 1.1d `backend/services/import_parsers/sma_sunny_portal.py` – SMA Parser (Classic + ennexOS)
+- [x] 1.2 API-Routen
+  - [x] 1.2a `backend/api/routes/data_import.py` – NEU (Upload + Parse Endpoints)
+  - [x] 1.2b `backend/main.py` – Import-Router registrieren
+- [x] 1.3 Frontend
+  - [x] 1.3a `frontend/src/api/portalImport.ts` – NEU: API Client
+  - [x] 1.3b `frontend/src/pages/DataImportWizard.tsx` – NEU: Import-Wizard
+  - [x] 1.3c `frontend/src/App.tsx` – Route hinzufügen
+  - [x] 1.3d `SubTabs.tsx` – Portal-Import Tab in Daten-Gruppe
+- [x] 1.4 Verifizierung Phase 1
+  - [x] 1.4a `GET /api/portal-import/parsers` → SMA Sunny Portal in Liste
+  - [x] 1.4b CSV-Upload → Vorschau mit erkannten Monatswerten (echte ennexOS-CSV getestet)
+  - [ ] 1.4c Übernahme → Monatsdaten korrekt befüllt (End-to-End-Test offen)
+  - [x] 1.4d Fehlermeldung bei falschem Format / fehlendem Hersteller
+- [ ] 1.5 Erweiterungen (offen)
+  - [ ] 1.5a Hinweis-Screenshot für SMA ennexOS Anleitung einbinden
+  - [ ] 1.5b Personalisierter Post-Import-Workflow (→ siehe Feature-Ideen)
+  - [ ] 1.5c SMA ECharger Wallbox CSV-Parser (eigener Parser, eigenes Format)
 
-- [ ] 2.1 Backend
-  - [ ] 2.1a `cloud_provider.py` – Discovery Endpoint (`GET /api/cloud/discover`)
-  - [ ] 2.1b `cloud_provider.py` – Import-System Endpoint (`POST /api/cloud/import-system`)
-- [ ] 2.2 Frontend
-  - [ ] 2.2a `frontend/src/api/cloudProvider.ts` – NEU: API Client
-  - [ ] 2.2b `frontend/src/pages/CloudSetupWizard.tsx` – NEU: 5-Schritt Wizard
-  - [ ] 2.2c `frontend/src/App.tsx` – Route hinzufügen
-  - [ ] 2.2d `SubTabs.tsx` + `TopNavigation.tsx` – Cloud-Provider Tab
-- [ ] 2.3 Verifizierung Phase 2
-  - [ ] 2.3a Wizard: Provider wählen → Auth → System erkennen
-  - [ ] 2.3b Geräte korrekt als Baum angezeigt (WR → Module → Speicher)
-  - [ ] 2.3c Kosten manuell ergänzen → Investitionen korrekt angelegt
-  - [ ] 2.3d Parent-Child Beziehungen (WR → PV-Module) korrekt
-  - [ ] 2.3e `device_mapping` in `cloud_provider_config` gespeichert
+### Phase 2: SMA ennexOS Local API Connector (braucht: Phase 1)
 
-### Phase 3: Monatsdaten-Prefill (braucht: Phase 2)
+- [ ] 2.1 Connector-Architektur
+  - [ ] 2.1a `backend/services/connectors/__init__.py` – Package Init
+  - [ ] 2.1b `backend/services/connectors/base.py` – ABC `DeviceConnector` + Dataclasses
+  - [ ] 2.1c `backend/services/connectors/registry.py` – Connector Factory
+  - [ ] 2.1d `backend/services/connectors/sma_ennexos_local.py` – SMA ennexOS Implementation
+- [ ] 2.2 Datenmodell
+  - [ ] 2.2a `backend/models/anlage.py` – Feld `connector_config` (JSON, nullable)
+  - [ ] 2.2b `backend/core/database.py` – Migration registrieren
+- [ ] 2.3 API-Routen
+  - [ ] 2.3a `backend/api/routes/connector.py` – NEU (Connect + Fetch Endpoints)
+  - [ ] 2.3b `backend/main.py` – Connector-Router registrieren
+- [ ] 2.4 Frontend
+  - [ ] 2.4a `frontend/src/api/connector.ts` – NEU: API Client
+  - [ ] 2.4b `frontend/src/pages/ConnectorSetupWizard.tsx` – NEU: Setup-Wizard
+  - [ ] 2.4c Integration in DataImportWizard (Tab: "Manuell" / "Automatisch")
+- [ ] 2.5 Verifizierung Phase 2
+  - [ ] 2.5a Verbindung zum Tripower X über IP herstellen
+  - [ ] 2.5b Authentifizierung via ennexOS OAuth2 (lokaler JWT)
+  - [ ] 2.5c Kumulative kWh-Zähler auslesen (PV, Netz, Batterie)
+  - [ ] 2.5d Monatsdifferenz berechnen und als Vorschlag anzeigen
+  - [ ] 2.5e Fehlerbehandlung: WR nicht erreichbar, Auth fehlgeschlagen
+
+### Phase 3: Monatsdaten-Prefill Integration (braucht: Phase 1 oder 2)
 
 - [ ] 3.1 Backend
-  - [ ] 3.1a `backend/services/vorschlag_service.py` – `CLOUD_API` als VorschlagQuelle
-  - [ ] 3.1b `cloud_provider.py` – Monatswerte Endpoint
-  - [ ] 3.1c `cloud_provider.py` – Verfügbare Monate Endpoint
+  - [ ] 3.1a `backend/services/vorschlag_service.py` – `PORTAL_IMPORT` + `LOCAL_CONNECTOR` als VorschlagQuelle
+  - [ ] 3.1b Monatswerte-Caching (letzte Abrufe zwischenspeichern)
 - [ ] 3.2 Frontend
-  - [ ] 3.2a `MonatsabschlussWizard.tsx` – "Werte aus Cloud laden" Button
-  - [ ] 3.2b `cloudProvider.ts` – Monatswerte API-Calls
+  - [ ] 3.2a `MonatsabschlussWizard.tsx` – "Daten importieren" Button (CSV oder Connector)
+  - [ ] 3.2b Werte als Vorschläge anzeigen, User übernimmt einzeln
 - [ ] 3.3 Verifizierung Phase 3
-  - [ ] 3.3a Monatsabschluss: Cloud-Button sichtbar (wenn setup_complete)
-  - [ ] 3.3b Werte werden als Vorschläge angezeigt (Quelle: cloud_api)
-  - [ ] 3.3c User kann einzelne Werte übernehmen/ablehnen
-  - [ ] 3.3d E-Auto, sonstige Kosten etc. manuell ergänzbar
+  - [ ] 3.3a Monatsabschluss: Import-Button sichtbar
+  - [ ] 3.3b CSV-Import: Werte werden als Vorschläge angezeigt
+  - [ ] 3.3c Connector: Werte werden automatisch abgerufen und als Vorschläge angezeigt
+  - [ ] 3.3d User kann einzelne Werte übernehmen/ablehnen
 
 ### Phase 4: Scheduler + Sicherheit + Polish (braucht: Phase 3)
 
-- [ ] 4.1 Scheduler
-  - [ ] 4.1a `backend/services/scheduler.py` – Cloud-Fetch CronJob (1. des Monats, 00:15)
+- [ ] 4.1 Scheduler (nur für Connector, nicht CSV)
+  - [ ] 4.1a `backend/services/scheduler.py` – Connector-Fetch CronJob (1. des Monats, 00:15)
+  - [ ] 4.1b Nur für Anlagen mit aktivem Connector + `auto_fetch_enabled: true`
 - [ ] 4.2 Sicherheit
-  - [ ] 4.2a `import_export/json_operations.py` – Tokens aus Export ausschließen
-  - [ ] 4.2b Token-Refresh-Fehler → UI-Hinweis "Erneut anmelden"
+  - [ ] 4.2a `import_export/json_operations.py` – Connector-Credentials aus Export ausschließen
+  - [ ] 4.2b Auth-Fehler → UI-Hinweis "Erneut verbinden"
 - [ ] 4.3 Dokumentation
   - [ ] 4.3a CHANGELOG.md aktualisieren
-  - [ ] 4.3b CLAUDE.md – Cloud-Provider Sektion
-  - [ ] 4.3c README.md (eedc) – Anleitung Cloud-Setup
+  - [ ] 4.3b CLAUDE.md – Datenquellen-Sektion
+  - [ ] 4.3c README.md (eedc) – Anleitung Import + Connector-Setup
 - [ ] 4.4 Verifizierung Phase 4
   - [ ] 4.4a Scheduler-Job manuell triggern → Daten gecached
-  - [ ] 4.4b JSON-Export enthält KEINE Tokens
-  - [ ] 4.4c Abgelaufener Token → "Erneut anmelden" Hinweis
+  - [ ] 4.4b JSON-Export enthält KEINE Credentials
+  - [ ] 4.4c Fehlender Connector → "Erneut verbinden" Hinweis
 
-### Phase 5: Subtree Integration (braucht: Phase 0, unabhängig von 1-4)
+### Phase 5: Subtree Integration ✅ (braucht: Phase 0, unabhängig von 1-4)
 
 - [x] 5.1 `eedc-homeassistant`: bestehenden eedc/ Code entfernen (git rm)
 - [x] 5.2 `git subtree add --prefix=eedc` von supernova1963/eedc ✓
@@ -118,13 +133,43 @@
 
 ## Kontext
 
-EEDC existiert aktuell nur als HA-Add-on (`eedc-homeassistant`). Das alte standalone `eedc` Repo (Supabase/Next.js) ist deprecated/archived. Ziel:
+### Hintergrund: SMA Cloud API nicht verfügbar
 
-1. **`eedc` Repo reaktivieren** - Neues standalone EEDC (FastAPI/React, gleiche Codebasis)
-2. **Cloud-Provider-Integration** - SMA ennexOS als Pilot (Anlage automatisch einrichten + Monatsdaten vorbefüllen)
-3. **Shared Core** - `eedc` als Source of Truth, `eedc-homeassistant` nutzt es via git subtree
+SMA hat mitgeteilt (2026-03-02), dass die Monitoring API **ausschließlich Firmen** vorbehalten ist. Die angebotene BasicReporting API (B2C) liefert nur PV-Erzeugungsdaten – keine Batterie, Netz oder Wallbox-Werte. **Daher: Strategiewechsel.**
 
-### Architektur-Entscheidung: Ein Codebase, zwei Deployment-Modi
+### Neue Strategie: 3-Stufen Datenquellen-Architektur
+
+```
+Stufe 1: CSV/Excel Import (universell, manuell)
+  └── Parser-Plugins pro Hersteller-Portal (Sunny Portal, Solar.web, etc.)
+
+Stufe 2: Lokale API/Modbus Connectors (automatisiert, lokal)
+  └── ennexOS REST API (SMA), Solar API (Fronius), REST (Kostal)
+
+Stufe 3: Cloud-API Connectors (automatisiert, remote) – Zukunft
+  └── SolarEdge API-Key, Enphase OAuth2 – von Community beigesteuert
+```
+
+**Warum dieser Ansatz?**
+- **Testbar:** SMA Sunny Portal CSV + ennexOS Local API mit eigenem Tripower X
+- **Breit:** CSV-Import funktioniert für JEDEN Hersteller (alle Portale haben Export)
+- **Erweiterbar:** Community kann Parser + Connectors für ihre Hardware beitragen
+- **Kein Vendor-Lock-in:** Keine Abhängigkeit von Cloud-API-Zugängen
+
+### API-Zugang pro Hersteller (Recherche 2026-03)
+
+| Hersteller | Cloud-API privat? | Lokale API? | CSV-Export? |
+|---|---|---|---|
+| **SMA** | Nein (nur Firmen) | ennexOS REST + Modbus TCP | Sunny Portal CSV |
+| **SolarEdge** | Ja (Self-Service API-Key) | – | Portal CSV |
+| **Fronius** | Pay-per-use | Solar API (unauthentifiziert!) | Solar.web CSV |
+| **Kostal** | Nein | REST + Modbus/SunSpec | Portal begrenzt |
+| **Enphase** | Ja (OAuth2, Free-Tier begrenzt) | IQ Gateway lokal | Portal Export |
+| **Huawei** | Nein (nur Installer) | – | FusionSolar begrenzt |
+| **Sungrow** | NDA erforderlich | – | iSolarCloud begrenzt |
+| **GoodWe** | Nein (Org-Account + NDA) | – | SEMS Portal |
+
+### Architektur-Entscheidung: Ein Codebase, zwei Deployment-Modi (unverändert)
 
 Der Code bleibt **in einem Repository** (`eedc`). HA-spezifische Features werden **conditional geladen** basierend auf Umgebungserkennung:
 
@@ -133,31 +178,26 @@ Der Code bleibt **in einem Repository** (`eedc`). HA-spezifische Features werden
 HA_INTEGRATION = bool(os.environ.get("SUPERVISOR_TOKEN"))
 ```
 
-- **`eedc`** = Standalone-Modus (kein SUPERVISOR_TOKEN → HA-Features aus, Cloud-Provider an)
+- **`eedc`** = Standalone-Modus (kein SUPERVISOR_TOKEN → HA-Features aus, Datenquellen an)
 - **`eedc-homeassistant`** = subtree von `eedc` + HA-Config. Als Add-on hat es SUPERVISOR_TOKEN → alles aktiv
 
-**Warum nicht physische Code-Trennung?**
-- 3 Mixed-Files (monatsabschluss.py, scheduler.py, vorschlag_service.py) haben optionale HA-Hooks
-- Conditional Loading ist simpler als zwei Codebases zu synchronisieren
-- HA-Code hat bereits graceful degradation (MQTT_AVAILABLE Flag, try/except Imports)
-
-### Repo-Übersicht (Zielzustand)
+### Repo-Übersicht (Zielzustand, unverändert)
 
 ```
 supernova1963/eedc                  # Standalone (reaktiviert)
-├── backend/                        # FastAPI
-├── frontend/                       # React/Vite
-├── docker-compose.yml              # Standalone Deployment
-├── Dockerfile                      # Standalone Docker
+├── backend/
+├── frontend/
+├── docker-compose.yml
+├── Dockerfile
 └── README.md
 
 supernova1963/eedc-homeassistant    # HA-Add-on
 ├── eedc/                           # ← git subtree von supernova1963/eedc
 │   ├── backend/
 │   └── frontend/
-├── config.yaml                     # HA-Add-on Manifest
-├── Dockerfile                      # HA-spezifisches Docker
-├── run.sh                          # HA-aware Startup
+├── config.yaml
+├── Dockerfile                      # HA-spezifisch
+├── run.sh
 ├── website/
 └── docs/
 
@@ -166,412 +206,530 @@ supernova1963/eedc-community        # Community-Server (unverändert)
 
 ---
 
-## Phase 0: Repo-Restrukturierung
+## Phase 1: CSV-Import mit Parser-Plugin-System
 
-### 0.1 Altes eedc Repo umbenennen
+### Konzept
 
-```bash
-gh repo rename eedc-archive --repo supernova1963/eedc
-# Danach: supernova1963/eedc ist frei
+User exportiert Monatsdaten aus seinem Hersteller-Portal (z.B. SMA Sunny Portal) als CSV und lädt sie in EEDC hoch. Ein herstellerspezifischer Parser erkennt das Format und extrahiert die Energiewerte.
+
+**User-Flow:**
+1. Sunny Portal → Jahresansicht → CSV herunterladen (Monatswerte)
+2. EEDC → "Daten importieren" → Hersteller wählen → CSV hochladen
+3. EEDC parsed → Vorschau mit erkannten Werten → User bestätigt
+4. Monatsdaten werden als Vorschläge befüllt
+
+### 1.1 Parser-Architektur
+
+```
+backend/services/import_parsers/
+├── __init__.py
+├── base.py              # ABC PortalExportParser + Dataclasses
+├── registry.py          # get_parser(), list_parsers()
+└── sma_sunny_portal.py  # SMA Sunny Portal CSV Parser
 ```
 
-### 0.2 Neues eedc Repo erstellen
-
-Inhalt von `eedc-homeassistant/eedc/` wird die Basis (ohne HA-Add-on Config).
-
-```bash
-# Neues Repo erstellen
-gh repo create supernova1963/eedc --public --description "EEDC - Energie Effizienz Data Center: Standalone PV-Analyse"
-
-# Lokalen Klon erstellen
-cd /home/gernot/claude
-mkdir eedc && cd eedc && git init
-
-# Code aus eedc-homeassistant/eedc/ kopieren
-cp -r /home/gernot/claude/eedc-homeassistant/eedc/backend .
-cp -r /home/gernot/claude/eedc-homeassistant/eedc/frontend .
-cp -r /home/gernot/claude/eedc-homeassistant/eedc/data .
-```
-
-### 0.3 Conditional Loading einbauen
-
-**`backend/core/config.py` - Feature-Flags:**
+**ABC `PortalExportParser` (base.py):**
 ```python
-# Deployment-Modus Erkennung
-HA_INTEGRATION_AVAILABLE = bool(os.environ.get("SUPERVISOR_TOKEN"))
-CLOUD_PROVIDER_ENABLED = True  # Immer verfügbar
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ParsedMonthData:
+    """Ein Monat an geparsten Energiedaten."""
+    jahr: int
+    monat: int
+    pv_erzeugung_kwh: Optional[float] = None
+    einspeisung_kwh: Optional[float] = None
+    netzbezug_kwh: Optional[float] = None
+    batterie_ladung_kwh: Optional[float] = None
+    batterie_entladung_kwh: Optional[float] = None
+    eigenverbrauch_kwh: Optional[float] = None
+    # Wallbox, Wärmepumpe etc. kommen typischerweise nicht aus Portal-Exporten
+
+@dataclass
+class ParserInfo:
+    """Metadaten eines Parsers für die UI."""
+    id: str                    # z.B. "sma_sunny_portal"
+    name: str                  # z.B. "SMA Sunny Portal"
+    hersteller: str            # z.B. "SMA"
+    beschreibung: str          # Kurzbeschreibung
+    erwartetes_format: str     # z.B. "CSV (Semikolon-getrennt, Jahresansicht)"
+    anleitung: str             # Anleitung zum Export im Portal
+    beispiel_header: str       # Beispiel der ersten Zeile(n)
+
+class PortalExportParser(ABC):
+    @abstractmethod
+    def info(self) -> ParserInfo:
+        """Parser-Metadaten für die UI."""
+
+    @abstractmethod
+    def can_parse(self, content: str, filename: str) -> bool:
+        """Prüft ob dieser Parser die Datei verarbeiten kann (Auto-Detect)."""
+
+    @abstractmethod
+    def parse(self, content: str) -> list[ParsedMonthData]:
+        """Parsed die Datei und gibt Monatswerte zurück."""
 ```
 
-**`backend/main.py` - Conditional Router Registration:**
+**SMA Sunny Portal Parser (`sma_sunny_portal.py`):**
+
+Unterstützt zwei SMA CSV-Formate:
+
+| Format | Quelle | Separator | Datum | Dezimal |
+|---|---|---|---|---|
+| Portal-Download (DE) | Sunny Portal Jahresansicht | `;` | `dd.mm.yyyy` | `,` |
+| Portal-Download (EN) | Sunny Portal Year view | `;` | `mm/dd/yyyy` | `.` |
+
+Erkannte Spalten (flexibles Header-Matching):
+```
+Datum / Date
+Ertrag / Gesamtertrag / Total Yield → pv_erzeugung_kwh
+Eigenverbrauch / Self-consumption → eigenverbrauch_kwh
+Einspeisung / Netzeinspeisung / Grid feed-in → einspeisung_kwh
+Netzbezug / Grid consumption / Grid purchase → netzbezug_kwh
+Batterieladung / Battery charge → batterie_ladung_kwh
+Batterieentladung / Battery discharge → batterie_entladung_kwh
+```
+
+**Auto-Detection:** Erkennt SMA-Format anhand von:
+- Semikolon als Separator
+- Typische SMA-Spaltennamen (Ertrag, Eigenverbrauch, etc.)
+- Optional: "SUNNY-MAIL" Header (Legacy-Format)
+
+**Registry (`registry.py`):**
 ```python
-# Core Routes (immer)
-app.include_router(cockpit.router, prefix="/api")
-app.include_router(aussichten.router, prefix="/api")
-app.include_router(anlagen.router, prefix="/api")
-app.include_router(monatsdaten.router, prefix="/api")
-app.include_router(investitionen.router, prefix="/api")
-app.include_router(strompreise.router, prefix="/api")
-app.include_router(monatsabschluss.router, prefix="/api")
-app.include_router(wetter.router, prefix="/api")
-app.include_router(solar_prognose.router, prefix="/api")
-app.include_router(pvgis.router, prefix="/api")
-app.include_router(community.router, prefix="/api")
-app.include_router(import_export_router, prefix="/api")
-app.include_router(cloud_provider.router, prefix="/api")  # NEU
+_PARSERS: dict[str, type[PortalExportParser]] = {}
 
-# HA-spezifische Routes (nur im Add-on)
-if settings.HA_INTEGRATION_AVAILABLE:
-    from backend.api.routes import ha_statistics, ha_export, sensor_mapping, ha_integration
-    app.include_router(ha_statistics.router, prefix="/api")
-    app.include_router(ha_export.router, prefix="/api")
-    app.include_router(sensor_mapping.router, prefix="/api")
-    app.include_router(ha_integration.router, prefix="/api")
+def register_parser(parser_class: type[PortalExportParser]):
+    """Decorator zum Registrieren eines Parsers."""
+    info = parser_class().info()
+    _PARSERS[info.id] = parser_class
+
+def list_parsers() -> list[ParserInfo]:
+    """Alle verfügbaren Parser."""
+    return [cls().info() for cls in _PARSERS.values()]
+
+def get_parser(parser_id: str) -> PortalExportParser:
+    """Parser nach ID."""
+    return _PARSERS[parser_id]()
+
+def auto_detect_parser(content: str, filename: str) -> Optional[PortalExportParser]:
+    """Versucht automatisch den passenden Parser zu finden."""
+    for cls in _PARSERS.values():
+        parser = cls()
+        if parser.can_parse(content, filename):
+            return parser
+    return None
 ```
 
-**Frontend: Navigation conditional machen**
+### 1.2 API-Routen
 
-`frontend/src/components/layout/SubTabs.tsx` und `TopNavigation.tsx`:
-- "Home Assistant" Gruppe nur anzeigen wenn `/api/ha-integration/status` erreichbar
-- Neues: "Cloud-Provider" Tab (immer sichtbar, da Core-Feature)
-- Gruppe umbenennen: "Datenquellen" (enthält Cloud + optional HA)
+**`backend/api/routes/data_import.py` (NEU):**
 
-**Dateien für Phase 0:**
+| Methode | Pfad | Beschreibung |
+|---|---|---|
+| GET | `/api/import/parsers` | Verfügbare Parser + Anleitungen |
+| POST | `/api/import/preview` | CSV hochladen → geparste Vorschau (ohne Speichern) |
+| POST | `/api/import/apply/{anlage_id}` | Geparste Werte als Monatsdaten übernehmen |
 
-| Datei | Aktion |
-|---|---|
-| `backend/core/config.py` | Feature-Flags hinzufügen |
-| `backend/main.py` | Conditional Router-Loading |
-| `frontend/src/components/layout/SubTabs.tsx` | HA-Tabs conditional, Cloud-Tab hinzufügen |
-| `frontend/src/components/layout/TopNavigation.tsx` | HA-Kategorie conditional |
-| `frontend/src/hooks/useHAAvailable.ts` | NEU: Hook zur HA-Erkennung (API-Call) |
-| `docker-compose.yml` | NEU: Standalone Deployment |
-| `Dockerfile` | NEU: Standalone Docker (simpler als HA-Version) |
-| `README.md` | NEU: Standalone-Dokumentation |
-
-### 0.4 Standalone Docker
-
-**`docker-compose.yml` (NEU):**
-```yaml
-services:
-  eedc:
-    build: .
-    ports:
-      - "8099:8099"
-    volumes:
-      - eedc-data:/data
-    environment:
-      - TZ=Europe/Berlin
-volumes:
-  eedc-data:
+**Preview-Endpoint:**
+```python
+@router.post("/import/preview")
+async def preview_import(
+    file: UploadFile,
+    parser_id: Optional[str] = None  # None = Auto-Detect
+):
+    content = (await file.read()).decode("utf-8-sig")  # BOM-safe
+    if parser_id:
+        parser = get_parser(parser_id)
+    else:
+        parser = auto_detect_parser(content, file.filename)
+        if not parser:
+            raise HTTPException(400, "Format nicht erkannt. Bitte Hersteller manuell wählen.")
+    months = parser.parse(content)
+    return {
+        "parser": parser.info(),
+        "monate": [asdict(m) for m in months],
+        "hinweis": "Werte prüfen und bestätigen."
+    }
 ```
 
-**`Dockerfile` (NEU, vereinfacht):**
-Basiert auf dem HA-Dockerfile, aber ohne HA-spezifische Labels/Healthcheck.
-Multi-stage: Node (Frontend Build) → Python (Runtime).
+**Apply-Endpoint:**
+- Nimmt die bestätigten Monate entgegen
+- Erstellt/aktualisiert `InvestitionMonatsdaten` pro Monat
+- Nutzt bestehenden Vorschlag-Mechanismus (Quelle: `PORTAL_IMPORT`, Konfidenz: 85)
 
-### 0.5 git subtree Setup (eedc-homeassistant)
+### 1.3 Frontend
 
-```bash
-cd /home/gernot/claude/eedc-homeassistant
+**`DataImportWizard.tsx` (NEU) – 3 Schritte:**
 
-# Bestehenden eedc/ Ordner entfernen (aus Git, nicht physisch)
-git rm -r eedc/backend eedc/frontend eedc/data
-git commit -m "refactor: Prepare for eedc subtree integration"
+1. **Hersteller & Datei wählen**
+   - Dropdown: Parser-Liste von `/api/import/parsers`
+   - Oder: "Automatisch erkennen"
+   - Drag & Drop / Datei-Auswahl für CSV
+   - Anleitung des gewählten Parsers anzeigen (Screenshot/Text: "So exportieren Sie im Sunny Portal")
 
-# eedc Repo als Subtree einbinden
-git subtree add --prefix=eedc https://github.com/supernova1963/eedc.git main --squash
+2. **Vorschau & Prüfen**
+   - Tabelle mit geparsten Monatswerten
+   - Checkboxen pro Monat (einzeln ab-/anwählen)
+   - Abweichungen zu bestehenden Daten markieren
+   - Fehlende Monate grau, vorhandene Monate mit Vergleich
 
-# HA-spezifische Dateien bleiben im Root:
-# eedc-homeassistant/
-# ├── eedc/           ← subtree
-# ├── config.yaml     ← HA-Add-on
-# ├── Dockerfile      ← HA Docker (bleibt bestehen)
-# ├── run.sh          ← HA Startup (bleibt bestehen)
-# └── ...
-```
+3. **Bestätigen & Importieren**
+   - Zusammenfassung: X Monate importiert, Y übersprungen
+   - Hinweis: "Werte wurden als Vorschläge gespeichert"
 
-**Sync-Workflow:**
-```bash
-# Änderungen aus eedc holen:
-git subtree pull --prefix=eedc https://github.com/supernova1963/eedc.git main --squash
-
-# ⚠️ KEIN subtree push! Würde HA-spezifische Dateien ins Standalone-Repo pushen.
-# Stattdessen: Änderungen direkt im eedc Repo machen, dann subtree pull.
-```
+**Navigation:**
+- Neue Gruppe "Datenquellen" in SubTabs/TopNavigation
+- Enthält: "Portal-Import" (immer) + "Geräte-Connector" (Phase 2) + HA-Tabs (conditional)
+- Route: `/einstellungen/daten-import` → DataImportWizard
 
 ---
 
-## Phase 1: SMA Client Foundation (in eedc Repo)
+## Phase 2: SMA ennexOS Local API Connector
 
-### 1.1 Datenmodell
+### Konzept
 
-**`backend/models/anlage.py` - Neues Feld:**
-```python
-cloud_provider_config: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+EEDC verbindet sich direkt mit dem Wechselrichter im lokalen Netzwerk. Kumulative kWh-Zähler werden ausgelesen und Monatsdifferenzen berechnet.
+
+**Entdeckung:** Der SMA Tripower X mit ennexOS hat eine **lokale REST API** unter `https://<ip>/api/v1/`. Diese ist besser geeignet als Modbus TCP:
+- Höheres Abstraktionsniveau (JSON statt Register)
+- Alle Messwerte inkl. Batterie und Netz
+- Authentifizierung via lokaler OAuth2 (Username/Password → JWT)
+- Genutzt von HA-Integrationen (`homeassistant_sma-ennexos`, `ha-pysmaplus`)
+
+### ennexOS Local API Details
+
+**Base URL:** `https://<inverter-ip>/api/v1/`
+
+**Authentifizierung:**
+```
+POST /api/v1/token
+Content-Type: application/x-www-form-urlencoded
+grant_type=password&username=<user>&password=<password>
+→ JWT access_token + refresh_token (JSESSIONID Cookie)
 ```
 
-**`backend/core/database.py` - Migration:**
+**Relevante Measurement-Channels (kumulative kWh-Zähler):**
+
+| Channel-ID | Beschreibung | EEDC-Mapping |
+|---|---|---|
+| `Measurement.Metering.TotWhOut.Pv` | PV-Erzeugung gesamt (Wh) | pv_erzeugung_kwh |
+| `Measurement.Metering.GridMs.TotWhOut` | Einspeisung gesamt (Wh) | einspeisung_kwh |
+| `Measurement.Metering.GridMs.TotWhIn` | Netzbezug gesamt (Wh) | netzbezug_kwh |
+| `Measurement.Metering.GridMs.TotWhIn.Bat` | Batterie-Ladung gesamt (Wh) | batterie_ladung_kwh |
+| `Measurement.Metering.GridMs.TotWhOut.Bat` | Batterie-Entladung gesamt (Wh) | batterie_entladung_kwh |
+
+**Monatswert-Berechnung:** Zählerstand Ende Monat − Zählerstand Anfang Monat = kWh im Monat
+
+**Hinweis:** Self-signed TLS-Zertifikat → `verify=False` bei httpx nötig.
+
+### 2.1 Connector-Architektur
+
+```
+backend/services/connectors/
+├── __init__.py
+├── base.py                 # ABC DeviceConnector + Dataclasses
+├── registry.py             # Connector Factory + list_connectors()
+└── sma_ennexos_local.py    # SMA ennexOS Local REST API
+```
+
+**ABC `DeviceConnector` (base.py):**
 ```python
-('cloud_provider_config', 'JSON'),
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ConnectorInfo:
+    id: str                     # z.B. "sma_ennexos_local"
+    name: str                   # z.B. "SMA ennexOS (Lokal)"
+    hersteller: str
+    beschreibung: str
+    auth_typ: str               # "password" | "api_key" | "none"
+    benötigt_lokales_netzwerk: bool
+
+@dataclass
+class ConnectorStatus:
+    verbunden: bool
+    letzter_abruf: Optional[str]    # ISO timestamp
+    fehler: Optional[str] = None
+
+@dataclass
+class MeterReading:
+    """Aktuelle Zählerstände (kumulativ)."""
+    timestamp: str                  # ISO timestamp
+    pv_erzeugung_wh: Optional[float] = None
+    einspeisung_wh: Optional[float] = None
+    netzbezug_wh: Optional[float] = None
+    batterie_ladung_wh: Optional[float] = None
+    batterie_entladung_wh: Optional[float] = None
+
+class DeviceConnector(ABC):
+    @abstractmethod
+    def info(self) -> ConnectorInfo:
+        """Connector-Metadaten."""
+
+    @abstractmethod
+    async def connect(self, config: dict) -> bool:
+        """Verbindung herstellen + testen. Config: {host, username, password, ...}"""
+
+    @abstractmethod
+    async def read_meters(self, config: dict) -> MeterReading:
+        """Aktuelle kumulative Zählerstände auslesen."""
+
+    @abstractmethod
+    async def test_connection(self, config: dict) -> ConnectorStatus:
+        """Verbindungstest."""
+```
+
+### 2.2 Datenmodell
+
+**`backend/models/anlage.py` – Neues Feld:**
+```python
+connector_config: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
 ```
 
 **JSON-Struktur:**
 ```json
 {
-  "provider": "sma_ennexos",
-  "plant_id": "12345",
-  "access_token": "eyJ...",
-  "refresh_token": "eyJ...",
-  "token_expires_at": "2026-03-01T10:00:00Z",
-  "device_mapping": { "SMA_INV_001": 5 },
-  "auto_fetch_enabled": false,
-  "last_fetch_timestamp": null,
-  "setup_complete": true
+  "connector_id": "sma_ennexos_local",
+  "host": "192.168.1.100",
+  "username": "User",
+  "password": "***encrypted***",
+  "auto_fetch_enabled": true,
+  "meter_snapshots": {
+    "2026-02-01T00:05:00": { "pv_wh": 12345000, "einsp_wh": 6789000, "... ": "..." },
+    "2026-03-01T00:05:00": { "pv_wh": 12890000, "einsp_wh": 7120000, "...": "..." }
+  },
+  "last_fetch_timestamp": "2026-03-01T00:15:00Z"
 }
 ```
 
-### 1.2 Provider-Package
+**Monatswert-Logik:**
+- Scheduler liest am 1. jeden Monats (00:15) die kumulativen Zähler
+- Speichert Snapshot in `meter_snapshots`
+- Differenz `snapshot[Monat] - snapshot[Vormonat]` = Monatswert in kWh
+- Werte werden als Vorschläge im Monatsabschluss angezeigt
 
-```
-backend/services/cloud_providers/
-├── __init__.py
-├── base.py              # ABC CloudProvider + Dataclasses
-├── registry.py          # get_provider(), list_providers()
-├── token_manager.py     # Token-Refresh (provider-übergreifend)
-└── sma_ennexos.py       # SMA ennexOS Implementation
-```
+### 2.3 API-Routen
 
-**ABC `CloudProvider` (base.py):**
-- `get_auth_url()` → OAuth2 URL
-- `exchange_code()` → Tokens erhalten
-- `refresh_access_token()` → Token erneuern
-- `discover_plants()` → Anlagen erkennen
-- `discover_devices(plant_id)` → Geräte (WR, Module, Speicher)
-- `get_monthly_data(plant_id, device_ids, jahr, monat)` → Monatswerte
-- `get_available_months(plant_id)` → Verfügbare Monate
-- `test_connection()` → Verbindungstest
-
-**Dataclasses:** CloudPlantInfo, CloudDeviceInfo, CloudMonthlyData
-
-**SMA ennexOS (`sma_ennexos.py`):**
-- OAuth2 Code Grant (manueller Copy-Paste, da lokal kein Redirect)
-- Sandbox: `sandbox-auth.smaapis.de` / `sandbox.smaapis.de`
-- Produktion: `auth.smaapis.de` / `smaapis.de`
-- httpx (bereits in requirements.txt)
-- 5-Min-Messintervalle → Aggregation zu Monatssummen
-
-**SMA Messdaten-Mapping:**
-| SMA | EEDC |
-|---|---|
-| pvGeneration | pv_erzeugung_kwh |
-| batteryCharging | ladung_kwh |
-| batteryDischarging | entladung_kwh |
-| gridFeedIn | einspeisung_kwh |
-| gridConsumption | netzbezug_kwh |
-
-### 1.3 API-Routen
-
-**`backend/api/routes/cloud_provider.py` (NEU):**
+**`backend/api/routes/connector.py` (NEU):**
 
 | Methode | Pfad | Beschreibung |
 |---|---|---|
-| GET | `/api/cloud/providers` | Verfügbare Provider |
-| GET | `/api/cloud/status/{anlage_id}` | Verbindungsstatus |
-| POST | `/api/cloud/auth/init/{provider}` | OAuth2 starten → Auth-URL |
-| POST | `/api/cloud/auth/callback` | Code einlösen → Tokens |
-| DELETE | `/api/cloud/disconnect/{anlage_id}` | Verbindung trennen |
+| GET | `/api/connector/available` | Verfügbare Connectors |
+| POST | `/api/connector/test` | Verbindungstest (host, user, pw) |
+| POST | `/api/connector/setup/{anlage_id}` | Connector einrichten |
+| GET | `/api/connector/status/{anlage_id}` | Aktueller Status |
+| POST | `/api/connector/fetch/{anlage_id}` | Manuell Zählerstände abrufen |
+| DELETE | `/api/connector/disconnect/{anlage_id}` | Connector trennen |
 
-**Registrierung in `backend/main.py`:**
-```python
-from backend.api.routes import cloud_provider
-app.include_router(cloud_provider.router, prefix="/api")
-```
+### 2.4 Frontend
 
-**Voraussetzung:** SMA Developer Portal Registrierung (developer.sma.de)
+**`ConnectorSetupWizard.tsx` (NEU) – 3 Schritte:**
 
----
+1. **Connector wählen + Verbinden**
+   - Connector-Auswahl (SMA ennexOS, später Fronius etc.)
+   - IP-Adresse + Credentials eingeben
+   - "Verbindung testen" Button
 
-## Phase 2: System Discovery + Smart Setup Wizard
+2. **System-Übersicht**
+   - Erkannte Messwerte anzeigen (aktuelle Zählerstände)
+   - Bestätigung dass die richtigen Werte gelesen werden
 
-### 2.1 Backend
-
-**Zusätzliche Endpoints in `cloud_provider.py`:**
-
-| Methode | Pfad | Beschreibung |
-|---|---|---|
-| GET | `/api/cloud/discover/{anlage_id}` | System erkennen |
-| POST | `/api/cloud/import-system/{anlage_id}` | Investitionen erstellen |
-
-**Import-Logik:**
-1. Cloud-Devices abrufen
-2. Pro WR: `Investition(typ="wechselrichter")` mit auto-fill
-3. Pro PV-String: `Investition(typ="pv-module", parent_investition_id=WR)`
-4. Pro Speicher: Child (Hybrid-WR) oder standalone (AC)
-5. Manuelle Felder (Kosten, Datum) aus Request mergen
-6. `device_mapping` speichern + `flag_modified()`
-
-**Auto-Fill vs. Manuell:**
-| Feld | Quelle |
-|---|---|
-| stamm_hersteller, stamm_modell, stamm_seriennummer | Cloud API |
-| max_leistung_kw, leistung_kwp, kapazitaet_kwh | Cloud API |
-| ausrichtung, neigung_grad, anzahl_module | Cloud API |
-| anschaffungskosten_gesamt, betriebskosten_jahr | Manuell |
-| anschaffungsdatum, Strompreise | Manuell |
-
-### 2.2 Frontend
-
-**`frontend/src/pages/CloudSetupWizard.tsx` (NEU):**
-
-5-Schritt Wizard (Vorbild: SensorMappingWizard):
-1. **Provider wählen** - Dropdown + Info was die Integration kann
-2. **Authentifizierung** - "SMA Login öffnen" + Code-Eingabefeld
-3. **System-Vorschau** - Erkannte Geräte als Baum, Checkboxen
-4. **Kosten ergänzen** - Pro Gerät: Anschaffungskosten, Datum
-5. **Zusammenfassung** - Übersicht + Auto-Fetch Toggle + "Einrichten"
-
-**`frontend/src/api/cloudProvider.ts` (NEU):**
-API Client für alle Cloud-Endpoints.
-
-**Navigation:**
-- `SubTabs.tsx`: Neue Gruppe "Datenquellen" mit Cloud-Provider Tab (immer) + HA-Tabs (conditional)
-- `TopNavigation.tsx`: Gleiche Struktur
-- `App.tsx`: Route `/einstellungen/cloud-setup` → CloudSetupWizard
+3. **Automatisierung konfigurieren**
+   - Auto-Fetch aktivieren (Scheduler liest monatlich)
+   - Zusammenfassung + "Einrichten"
 
 ---
 
-## Phase 3: Monatsdaten-Prefill
+## Phase 3: Monatsdaten-Prefill Integration
 
 ### 3.1 Backend
 
-**`backend/services/vorschlag_service.py` (Zeile 24):**
+**`backend/services/vorschlag_service.py` – Neue VorschlagQuellen:**
 ```python
-CLOUD_API = "cloud_api"  # Konfidenz: 90 (zwischen HA_SENSOR:95 und VORMONAT:80)
+PORTAL_IMPORT = "portal_import"    # Konfidenz: 85 (manuell importiert, daher leicht geringer)
+LOCAL_CONNECTOR = "local_connector" # Konfidenz: 92 (automatisch, direkt vom Gerät)
+# Bestehend: HA_SENSOR: 95, VORMONAT: 80
 ```
 
-**Zusätzliche Endpoints in `cloud_provider.py`:**
-
-| Methode | Pfad | Beschreibung |
-|---|---|---|
-| GET | `/api/cloud/monatswerte/{anlage_id}/{jahr}/{monat}` | Monatsdaten abrufen |
-| GET | `/api/cloud/verfuegbare-monate/{anlage_id}` | Verfügbare Monate |
-
-Separater Endpoint (nicht in Monatsabschluss eingebaut), da Cloud-Abrufe mehrere Sekunden dauern können.
+**Integration in MonatsabschlussWizard:**
+- "Daten importieren" Dropdown mit Optionen:
+  - "Aus CSV-Datei" → DataImportWizard (Phase 1)
+  - "Vom Wechselrichter" → Connector-Fetch (Phase 2, nur wenn Connector aktiv)
+  - "Aus Home Assistant" → bestehende HA-Integration (nur wenn HA verfügbar)
 
 ### 3.2 Frontend
 
-**`frontend/src/pages/MonatsabschlussWizard.tsx`:**
-- Neuer Button "Werte aus Cloud laden" (neben bestehendem "Werte aus HA laden")
-- Nur sichtbar wenn `cloud_provider_config.setup_complete === true`
-- Lädt Werte asynchron → zeigt als Vorschläge → User übernimmt einzeln
+**`MonatsabschlussWizard.tsx` – Erweiterung:**
+- Neuer Bereich "Datenquelle" vor den Eingabefeldern
+- Buttons je nach verfügbarer Quelle
+- Werte werden als editierbare Vorschläge eingesetzt (gelb hinterlegt)
+- Quelle wird pro Wert angezeigt (Icon: CSV-Datei / WR / HA)
 
 ---
 
 ## Phase 4: Scheduler + Sicherheit + Polish
 
-### 4.1 Scheduler
+### 4.1 Scheduler (nur Connector)
 
 **`backend/services/scheduler.py`:**
-- Neuer CronJob `cloud_monthly_fetch` (1. des Monats, 00:15)
-- Nur für Anlagen mit `auto_fetch_enabled: true`
-- Cached Cloud-Werte als Vorschläge (NICHT automatischer Monatsabschluss)
+- Neuer CronJob `connector_monthly_snapshot` (1. des Monats, 00:15)
+- Liest kumulative Zähler → speichert Snapshot
+- Berechnet Monatsdifferenz → cached als Vorschlag
+- Nur für Anlagen mit `connector_config.auto_fetch_enabled: true`
 
 ### 4.2 Sicherheit
 
-**`backend/api/routes/import_export/json_operations.py`:**
-- `cloud_provider_config` aus JSON-Export ausschließen (Tokens!)
-
-**Token-Management:**
-- Auto-Refresh via `token_manager.py` vor jedem API-Call
-- Bei Refresh-Token-Ablauf: UI-Hinweis "Erneut anmelden"
+- `connector_config.password` verschlüsselt speichern (Fernet symmetric encryption)
+- Passwords + Tokens aus JSON-Export ausschließen
+- Auth-Fehler → UI-Hinweis "Erneut verbinden"
+- Self-signed TLS: User muss aktiv bestätigen
 
 ---
 
 ## Zusammenfassung: Alle Dateien
 
-### Phase 0 (Repo-Setup)
+### Phase 1 (CSV-Import, im eedc Repo)
 
-| Datei (im neuen eedc Repo) | Aktion |
+| Datei | Aktion |
 |---|---|
-| `backend/core/config.py` | Feature-Flags (HA_INTEGRATION_AVAILABLE) |
-| `backend/main.py` | Conditional Router-Loading |
-| `frontend/src/components/layout/SubTabs.tsx` | HA conditional, Datenquellen-Gruppe |
-| `frontend/src/components/layout/TopNavigation.tsx` | HA conditional |
-| `frontend/src/hooks/useHAAvailable.ts` | NEU: HA-Erkennung |
-| `docker-compose.yml` | NEU: Standalone Deployment |
-| `Dockerfile` | NEU: Standalone Docker |
-| `README.md` | NEU |
+| `backend/services/import_parsers/__init__.py` | NEU |
+| `backend/services/import_parsers/base.py` | NEU: ABC + Dataclasses |
+| `backend/services/import_parsers/registry.py` | NEU: Parser Factory |
+| `backend/services/import_parsers/sma_sunny_portal.py` | NEU: SMA Parser |
+| `backend/api/routes/data_import.py` | NEU: Upload + Parse Endpoints |
+| `backend/main.py` | ÄNDERN: Import-Router registrieren |
+| `frontend/src/api/dataImport.ts` | NEU: API Client |
+| `frontend/src/pages/DataImportWizard.tsx` | NEU: Import-Wizard |
+| `frontend/src/App.tsx` | ÄNDERN: Route |
+| `frontend/src/components/layout/SubTabs.tsx` | ÄNDERN: Datenquellen-Tab |
+| `frontend/src/components/layout/TopNavigation.tsx` | ÄNDERN: Datenquellen-Tab |
 
-### Phase 1-4 (Cloud-Provider, im eedc Repo)
+### Phase 2 (Connector, im eedc Repo)
 
-| Datei | Aktion | Phase |
-|---|---|---|
-| `backend/services/cloud_providers/__init__.py` | NEU | 1 |
-| `backend/services/cloud_providers/base.py` | NEU | 1 |
-| `backend/services/cloud_providers/registry.py` | NEU | 1 |
-| `backend/services/cloud_providers/token_manager.py` | NEU | 1 |
-| `backend/services/cloud_providers/sma_ennexos.py` | NEU | 1 |
-| `backend/models/anlage.py` | ÄNDERN (cloud_provider_config) | 1 |
-| `backend/core/database.py` | ÄNDERN (Migration) | 1 |
-| `backend/api/routes/cloud_provider.py` | NEU | 1+2+3 |
-| `backend/main.py` | ÄNDERN (Cloud-Router) | 1 |
-| `frontend/src/pages/CloudSetupWizard.tsx` | NEU | 2 |
-| `frontend/src/api/cloudProvider.ts` | NEU | 2 |
-| `frontend/src/App.tsx` | ÄNDERN (Route) | 2 |
-| `backend/services/vorschlag_service.py` | ÄNDERN (CLOUD_API) | 3 |
-| `frontend/src/pages/MonatsabschlussWizard.tsx` | ÄNDERN (Cloud-Button) | 3 |
-| `backend/services/scheduler.py` | ÄNDERN (Cloud-Job) | 4 |
-| `backend/api/routes/import_export/json_operations.py` | ÄNDERN (Token-Exclude) | 4 |
+| Datei | Aktion |
+|---|---|
+| `backend/services/connectors/__init__.py` | NEU |
+| `backend/services/connectors/base.py` | NEU: ABC + Dataclasses |
+| `backend/services/connectors/registry.py` | NEU: Connector Factory |
+| `backend/services/connectors/sma_ennexos_local.py` | NEU: SMA ennexOS |
+| `backend/api/routes/connector.py` | NEU: Connect + Fetch Endpoints |
+| `backend/models/anlage.py` | ÄNDERN: connector_config |
+| `backend/core/database.py` | ÄNDERN: Migration |
+| `backend/main.py` | ÄNDERN: Connector-Router |
+| `frontend/src/api/connector.ts` | NEU: API Client |
+| `frontend/src/pages/ConnectorSetupWizard.tsx` | NEU: Setup-Wizard |
 
-### Phase 5 (Subtree, in eedc-homeassistant)
+### Phase 3 (Prefill, im eedc Repo)
 
-| Aktion |
-|---|
-| `git subtree add --prefix=eedc` von eedc Repo |
-| HA-Dateien (config.yaml, Dockerfile, run.sh) bleiben im Root |
-| Dokumentation: Subtree-Workflow in CLAUDE.md |
+| Datei | Aktion |
+|---|---|
+| `backend/services/vorschlag_service.py` | ÄNDERN: Neue Quellen |
+| `frontend/src/pages/MonatsabschlussWizard.tsx` | ÄNDERN: Import-Buttons |
+
+### Phase 4 (Polish, im eedc Repo)
+
+| Datei | Aktion |
+|---|---|
+| `backend/services/scheduler.py` | ÄNDERN: Connector-Job |
+| `backend/api/routes/import_export/json_operations.py` | ÄNDERN: Credential-Exclude |
+| CHANGELOG.md | ÄNDERN |
+| CLAUDE.md | ÄNDERN |
+| README.md (eedc) | ÄNDERN |
 
 ---
 
 ## Reihenfolge & Abhängigkeiten
 
 ```
-Phase 0: Repo-Setup
-  ├── 0.1 Altes eedc → eedc-legacy umbenennen
-  ├── 0.2 Neues eedc Repo erstellen + Code kopieren
-  ├── 0.3 Conditional Loading einbauen
-  ├── 0.4 Standalone Dockerfile + docker-compose
-  └── 0.5 Testen: eedc standalone läuft ohne HA
+Phase 0: Repo-Setup ✅
+Phase 5: Subtree Integration ✅
 
-Phase 1: SMA Client Foundation (braucht: Phase 0 + SMA Developer Account)
-  ├── Provider-Package + ABC
-  ├── SMA ennexOS Client (OAuth2 + API-Calls)
-  ├── Datenmodell (cloud_provider_config)
-  └── API-Routen (Auth + Status)
+Phase 1: CSV-Import (keine externe Abhängigkeit!)
+  ├── Parser-Architektur (ABC, Registry)
+  ├── SMA Sunny Portal CSV Parser
+  ├── Upload + Preview + Apply API
+  └── DataImportWizard Frontend
 
-Phase 2: Smart Setup Wizard (braucht: Phase 1 + Sandbox-Credentials)
-  ├── Discovery + Import Endpoints
-  ├── CloudSetupWizard.tsx (5 Schritte)
-  └── Navigation-Integration
+Phase 2: SMA ennexOS Local Connector (braucht: Phase 1 für UI-Integration, Tripower X im LAN)
+  ├── Connector-Architektur (ABC, Registry)
+  ├── SMA ennexOS Local REST API Client
+  ├── Datenmodell (connector_config)
+  ├── Meter-Snapshot + Monatsdifferenz
+  └── ConnectorSetupWizard Frontend
 
-Phase 3: Monatsdaten-Prefill (braucht: Phase 2)
-  ├── VorschlagQuelle.CLOUD_API
-  ├── Monatswerte-Endpoints
-  └── "Werte aus Cloud laden" Button
+Phase 3: Monatsdaten-Prefill (braucht: Phase 1 oder 2)
+  ├── VorschlagQuelle.PORTAL_IMPORT / LOCAL_CONNECTOR
+  └── "Daten importieren" in MonatsabschlussWizard
 
 Phase 4: Scheduler + Polish (braucht: Phase 3)
-  ├── Auto-Fetch CronJob
-  ├── Token-Sicherheit (Export-Exclude)
+  ├── Connector-Snapshot CronJob
+  ├── Credential-Sicherheit
   └── Dokumentation
-
-Phase 5: Subtree Integration (braucht: Phase 0, unabhängig von 1-4)
-  └── eedc-homeassistant nutzt eedc als Subtree
 ```
 
-**Hinweis:** Phase 5 kann parallel zu Phase 1-4 erfolgen, sobald Phase 0 abgeschlossen ist.
+**Vorteil:** Phase 1 hat **keine externen Abhängigkeiten** – nur eine CSV-Datei aus dem Sunny Portal reicht zum Testen.
+
+## Erweiterbarkeit: Community-Beiträge
+
+### Neuen Parser hinzufügen (Stufe 1)
+```python
+# backend/services/import_parsers/fronius_solarweb.py
+from .base import PortalExportParser, ParserInfo, ParsedMonthData
+from .registry import register_parser
+
+@register_parser
+class FroniusSolarWebParser(PortalExportParser):
+    def info(self) -> ParserInfo:
+        return ParserInfo(id="fronius_solarweb", name="Fronius Solar.web", ...)
+    def can_parse(self, content, filename) -> bool: ...
+    def parse(self, content) -> list[ParsedMonthData]: ...
+```
+
+### Neuen Connector hinzufügen (Stufe 2)
+```python
+# backend/services/connectors/fronius_solar_api.py
+from .base import DeviceConnector, ConnectorInfo, MeterReading
+from .registry import register_connector
+
+@register_connector
+class FroniusSolarAPIConnector(DeviceConnector):
+    def info(self) -> ConnectorInfo:
+        return ConnectorInfo(id="fronius_solar_api", name="Fronius Solar API", ...)
+    async def connect(self, config) -> bool: ...
+    async def read_meters(self, config) -> MeterReading: ...
+```
+
+### Neuen Cloud-Connector hinzufügen (Stufe 3, Zukunft)
+```python
+# backend/services/connectors/solaredge_cloud.py – SolarEdge API-Key basiert
+# backend/services/connectors/enphase_cloud.py – Enphase OAuth2
+# Gleiche ABC wie DeviceConnector, zusätzlich: auth_url(), exchange_token() etc.
+```
+
+## Feature-Ideen
+
+### Personalisierter Post-Import-Workflow
+Nach einem Portal-Import (oder Connector-Sync) fehlen oft noch Daten für andere Investitionen
+(Wallbox, Wärmepumpe, E-Auto). Der Nutzer denkt "fertig", hat aber nur PV/Batterie/Netz importiert.
+
+**Idee:** Nach Import einen "Monatscheck" anbieten, der alle Investitionen der Anlage durchgeht:
+- PV-Daten: importiert (aus Portal) ✓
+- Wallbox: "Noch keine Daten für Jan-Mär 2026 – jetzt eingeben?"
+- Wärmepumpe: "Noch keine Daten..."
+
+Umsetzung: Smarte Weiterleitung zum Monatsabschluss-Wizard, gefiltert auf fehlende Monate/Investitionen.
+Könnte auch als eigenständiger "Daten-Status" Dashboard-Widget nützlich sein.
 
 ## Hinweise
 
 - **Kein Breaking Change** für bestehende eedc-homeassistant Installationen
+- Phase 1 ist sofort umsetzbar (kein Vertrag, keine API-Keys, nur CSV)
+- Phase 2 erfordert Tripower X im lokalen Netzwerk + Modbus/API-Aktivierung
+- Community kann Parser + Connectors für ihre Hardware beitragen (PR-basiert)
 - Voraussetzungen und Verifikationsschritte sind in der Checkliste oben integriert
 - Diese Datei wird mit jedem Implementierungsschritt aktualisiert
