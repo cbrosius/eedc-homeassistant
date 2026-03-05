@@ -109,6 +109,30 @@ function WaermepumpeCard({ dashboard }: { dashboard: WaermepumpeDashboardRespons
          (md.verbrauch_daten.stromverbrauch_kwh || 1),
   }))
 
+  // Monatsvergleich über Jahre: Jan/Feb/...Dez als Gruppen, je ein Balken pro Jahr
+  const [vergleichModus, setVergleichModus] = useState<'cop' | 'strom'>('strom')
+  const vergleichJahre = [...new Set(monatsdaten.map(md => md.jahr))].sort()
+  const vergleichJahreColors = ['#f59e0b', '#22c55e', '#3b82f6', '#ef4444', '#8b5cf6']
+  const vergleichData = Array.from({ length: 12 }, (_, i) => {
+    const monat = i + 1
+    const entry: Record<string, string | number | null> = { name: monatNamen[monat] }
+    for (const jahr of vergleichJahre) {
+      const md = monatsdaten.find(m => m.monat === monat && m.jahr === jahr)
+      if (md) {
+        const waerme = (md.verbrauch_daten.heizenergie_kwh || 0) + (md.verbrauch_daten.warmwasser_kwh || 0)
+        const strom = md.verbrauch_daten.stromverbrauch_kwh || 0
+        if (vergleichModus === 'cop') {
+          entry[`val_${jahr}`] = strom > 0 ? Math.round(waerme / strom * 100) / 100 : null
+        } else {
+          entry[`val_${jahr}`] = strom > 0 ? Math.round(strom) : null
+        }
+      } else {
+        entry[`val_${jahr}`] = null
+      }
+    }
+    return entry
+  })
+
   const waermePieData = [
     { name: 'Heizung', value: z.gesamt_heizenergie_kwh },
     { name: 'Warmwasser', value: z.gesamt_warmwasser_kwh },
@@ -265,22 +289,47 @@ function WaermepumpeCard({ dashboard }: { dashboard: WaermepumpeDashboardRespons
           </div>
         </div>
 
-        {/* COP pro Monat */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
-            COP pro Monat
+      </div>
+
+      {/* Monatsvergleich über Jahre – volle Breite mit Toggle */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            {vergleichModus === 'cop' ? 'COP' : 'Stromverbrauch'} Monatsvergleich {vergleichJahre.length > 1 ? `(${vergleichJahre[0]}–${vergleichJahre[vergleichJahre.length - 1]})` : vergleichJahre[0]}
           </h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" fontSize={10} />
-                <YAxis domain={[0, 6]} />
-                <Tooltip formatter={(v: number) => v.toFixed(2)} />
-                <Bar dataKey="cop" fill="#f59e0b" name="COP" />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 text-sm overflow-hidden">
+            <button
+              onClick={() => setVergleichModus('strom')}
+              className={`px-3 py-1 transition-colors ${vergleichModus === 'strom' ? 'bg-yellow-500 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            >
+              Strom (kWh)
+            </button>
+            <button
+              onClick={() => setVergleichModus('cop')}
+              className={`px-3 py-1 transition-colors ${vergleichModus === 'cop' ? 'bg-orange-500 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
+            >
+              COP
+            </button>
           </div>
+        </div>
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={vergleichData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={12} />
+              <YAxis domain={vergleichModus === 'cop' ? [0, 6] : undefined} />
+              <Tooltip formatter={(v: number) => vergleichModus === 'cop' ? v?.toFixed(2) : `${v} kWh`} />
+              <Legend />
+              {vergleichJahre.map((jahr, i) => (
+                <Bar
+                  key={jahr}
+                  dataKey={`val_${jahr}`}
+                  name={`${jahr}`}
+                  fill={vergleichJahreColors[i % vergleichJahreColors.length]}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

@@ -18,10 +18,11 @@ export { sensorMappingApi } from './sensorMapping'
 export { monatsabschlussApi } from './monatsabschluss'
 export { haStatisticsApi } from './haStatistics'
 export { communityApi } from './community'
+export { portalImportApi } from './portalImport'
 
 // Re-export types
 export type { ApiError } from './client'
-export type { HealthResponse, SettingsResponse, StatsResponse } from './system'
+export type { HealthResponse, SettingsResponse, StatsResponse, UpdateCheckResponse } from './system'
 export type { MonatsdatenCreate, MonatsdatenUpdate, MonatsdatenMitKennzahlen, AggregierteMonatsdaten } from './monatsdaten'
 export type { InvestitionCreate, InvestitionUpdate, InvestitionTypInfo, ROIKomponente, ROIBerechnung, ROIDashboardResponse } from './investitionen'
 export type { StrompreisCreate, StrompreisUpdate } from './strompreise'

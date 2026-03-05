@@ -50,6 +50,10 @@ class Anlage(Base):
     latitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     longitude: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
+    # Horizont-Profil für PVGIS (userhorizon Parameter)
+    # Flat-Liste von Elevationswerten (Grad) bei gleichmäßigen Azimut-Schritten ab Nord (0°)
+    horizont_daten: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+
     # Technische Daten
     ausrichtung: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # Süd, Ost-West, etc.
     neigung_grad: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -81,6 +85,11 @@ class Anlage(Base):
     # Struktur: {"basis": {...}, "investitionen": {...}, "mqtt_setup_complete": bool, "mqtt_setup_timestamp": str}
     # Siehe docs/PLAN_AUTOMATISCHE_DATENERFASSUNG.md für vollständige Dokumentation
     sensor_mapping: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
+
+    # Connector-Konfiguration für direkte Geräteverbindung (ennexOS REST API etc.)
+    # Struktur: {"connector_id": "sma_ennexos", "host": "...", "username": "...",
+    #            "password": "base64...", "geraet_name": "...", "meter_snapshots": {...}, ...}
+    connector_config: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     # Community-Sharing: Hash zur Identifikation bei Löschung
     # Wird nach erfolgreichem Teilen gesetzt und für Delete-Endpoint benötigt

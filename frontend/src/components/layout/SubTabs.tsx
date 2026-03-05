@@ -29,6 +29,8 @@ import {
   BarChart2,
   Share2,
   MapPin,
+  HardDrive,
+  FileSpreadsheet,
 } from 'lucide-react'
 
 interface TabItem {
@@ -80,10 +82,14 @@ const einstellungenGruppen: TabGroup[] = [
       '/einstellungen/import',
       '/einstellungen/demo',
       '/einstellungen/datenerfassung',
+      '/einstellungen/portal-import',
+      '/einstellungen/connector',
     ],
     tabs: [
       { name: 'Monatsdaten',     href: '/einstellungen/monatsdaten',     icon: Database },
       { name: 'Monatsabschluss', href: '/einstellungen/monatsabschluss', icon: CalendarCheck },
+      { name: 'Portal-Import',   href: '/einstellungen/portal-import',   icon: FileSpreadsheet },
+      { name: 'Connector',       href: '/einstellungen/connector',       icon: Cpu },
       { name: 'Import/Export',   href: '/einstellungen/import',          icon: Upload },
       { name: 'Demo-Daten',      href: '/einstellungen/demo',            icon: FlaskConical },
       { name: 'Datenerfassung',  href: '/einstellungen/datenerfassung',  icon: BookOpen },
@@ -94,10 +100,12 @@ const einstellungenGruppen: TabGroup[] = [
     prefixes: [
       '/einstellungen/solarprognose',
       '/einstellungen/allgemein',
+      '/einstellungen/backup',
     ],
     tabs: [
       { name: 'Solarprognose', href: '/einstellungen/solarprognose', icon: Cpu },
       { name: 'Allgemein',     href: '/einstellungen/allgemein',     icon: Settings },
+      { name: 'Backup',        href: '/einstellungen/backup',        icon: HardDrive },
     ],
   },
   {

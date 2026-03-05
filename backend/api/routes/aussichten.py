@@ -20,7 +20,7 @@ from backend.models.investition import Investition, InvestitionMonatsdaten
 from backend.models.pvgis_prognose import PVGISPrognose
 from backend.models.strompreis import Strompreis
 from backend.models.monatsdaten import Monatsdaten
-from backend.api.routes.strompreise import lade_tarife_fuer_anlage
+from backend.api.routes.strompreise import lade_tarife_fuer_anlage, resolve_netzbezug_preis_cent
 from backend.core.calculations import berechne_ust_eigenverbrauch
 from backend.utils.sonstige_positionen import berechne_sonstige_netto
 from backend.services.wetter_service import (
@@ -113,6 +113,7 @@ class DegradationSchema(BaseModel):
     geschaetzt_prozent_jahr: Optional[float]
     hinweis: str
     methode: Optional[str] = None  # "vollstaendig" oder "tmy_ergaenzt"
+    zuverlaessig: bool = False  # True erst ab 3+ Jahren
 
 
 class TrendAnalyseResponse(BaseModel):
@@ -795,6 +796,18 @@ async def get_trend_analyse(
             else:
                 degradation_hinweis = f"Noch kein vollständiges Jahr - aktuell nur unvollständige Jahre mit {min_monate}-{max_monate} Monaten"
 
+    # Positive Degradation kappen (physikalisch nicht möglich, sondern Wetterschwankung)
+    degradation_zuverlaessig = False
+    if degradation_prozent is not None:
+        anzahl_datenjahre = len(vollstaendige_jahre) if degradation_methode == "vollstaendig" else len(aufgefuellte_jahre) if 'aufgefuellte_jahre' in dir() else 0
+        if degradation_prozent > 0:
+            degradation_prozent = 0.0
+            degradation_hinweis += " – Ertragssteigerung durch Wetterschwankungen, keine messbare Degradation"
+        if anzahl_datenjahre >= 3:
+            degradation_zuverlaessig = True
+        else:
+            degradation_hinweis += " – Wert mit Vorsicht interpretieren (min. 3 Jahre empfohlen)"
+
     return TrendAnalyseResponse(
         anlage_id=anlage_id,
         anlagenname=anlage.anlagenname or f"Anlage {anlage_id}",
@@ -809,6 +822,7 @@ async def get_trend_analyse(
             geschaetzt_prozent_jahr=degradation_prozent,
             hinweis=degradation_hinweis,
             methode=degradation_methode,
+            zuverlaessig=degradation_zuverlaessig,
         ),
         datenquellen=["historische-daten", "pvgis-tmy"] if degradation_methode == "tmy_ergaenzt" else ["historische-daten"],
     )
@@ -1118,12 +1132,13 @@ async def get_finanz_prognose(
     bisherige_eauto_ersparnis = 0.0
 
     for md in monatsdaten:
+        md_preis = resolve_netzbezug_preis_cent(md, netzbezug_preis)
         # Einspeise-Erlös
         if md.einspeisung_kwh:
             bisherige_ertraege += md.einspeisung_kwh * einspeiseverguetung / 100
         # EV-Ersparnis (beinhaltet bereits Speicher + V2H)
         if md.eigenverbrauch_kwh:
-            bisherige_ertraege += md.eigenverbrauch_kwh * netzbezug_preis / 100
+            bisherige_ertraege += md.eigenverbrauch_kwh * md_preis / 100
 
     # Wärmepumpe Alternativkosten-Ersparnis
     # Ersparnis = Gas-Kosten (was es kosten würde) - WP-Stromkosten
