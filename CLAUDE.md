@@ -6,7 +6,7 @@
 
 **eedc** (Energie Effizienz Data Center) - Standalone PV-Analyse mit optionaler HA-Integration.
 
-**Version:** 2.6.0 | **Status:** Stable Release
+**Version:** 2.7.1 | **Status:** Stable Release
 
 ## Verbundene Repositories
 
@@ -166,13 +166,19 @@ EEDC Add-on                              Community Server
 
 ## Letzte Änderungen
 
+**v2.7.1** - Monatsabschluss als zentrale Datenerfassungs-Anlaufstelle:
+
+- **Einstellungen-Menü umgebaut:** Daten-SubTabs auf 3 reduziert (Monatsdaten, Monatsabschluss, Einrichtung), Solarprognose zu Stammdaten verschoben
+- **Einrichtung-Hub:** Neue zentrale Seite für Datenquellen-Konfiguration (HA, Connector, Cloud, CSV)
+- **Monatsabschluss-Wizard:** Datenquellen-Status-Chips, Cloud-Fetch-Button, Datenherkunft-Anzeige, "Keine Quellen"-Hinweis
+- **Monatsabschluss-Schnellzugriff:** Kalender-Icon mit Badge in der Hauptnavigation
+- **Cloud-Fetch-Endpoint:** `POST /monatsabschluss/{id}/{j}/{m}/cloud-fetch` für Live-Abruf aus Cloud-APIs
+
 **v2.6.0** - Dynamischer Tarif, Portal-Import, Geräte-Connectors:
 
 - **Dynamischer Tarif:** Monatlicher Ø-Strompreis aus HA-Sensor oder manuell
 - **Portal-Import:** CSV-Upload von SMA Sunny Portal, SMA eCharger, EVCC, Fronius Solarweb
 - **9 Geräte-Connectors:** SMA ennexOS, SMA WebConnect, Fronius Solar API, go-eCharger, Shelly 3EM, OpenDTU, Kostal Plenticore, sonnenBatterie, Tasmota SML
 - **getestet-Flag:** Parser und Connectors zeigen im UI an ob mit echten Geräten verifiziert
-
-**v2.5.5** - Hamburger-Menu, Mobile Fixes, Energie-Bilanz Toggle
 
 Für Details siehe [CHANGELOG.md](CHANGELOG.md) und [docs/ARCHITEKTUR.md](docs/ARCHITEKTUR.md).

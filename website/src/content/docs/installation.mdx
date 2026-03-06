@@ -75,7 +75,14 @@ Das Standalone-Deployment nutzt das eigenständige [eedc Repository](https://git
 
 | Methode | Beschreibung | Voraussetzung |
 |---------|-------------|---------------|
+| Monatsabschluss-Wizard | Zentrale monatliche Datenerfassung mit Quellen-Status und Vorschlägen | Keine |
 | HA-Statistik-Import | Bulk-Import aller Monate aus HA-Langzeitstatistiken | Home Assistant + Volume-Mapping |
-| Monatsabschluss-Wizard | Geführte monatliche Eingabe mit Vorschlägen aus HA | Home Assistant (optional) |
-| CSV-Import | Import aus Tabellenkalkulationen | Keine |
+| Portal-Import | CSV-Upload aus SMA Sunny Portal, Fronius, EVCC u.a. | Keine |
+| Cloud-Import | Direktabruf aus Hersteller-Cloud-APIs | API-Zugangsdaten |
+| Geräte-Connector | Automatische Snapshots von lokalen Geräten im Netzwerk | Gerät im LAN |
+| CSV-Import | Import aus personalisierter CSV-Vorlage | Keine |
 | Manuelle Eingabe | Direkte Erfassung im Formular | Keine |
+
+:::tip[Einrichtung-Hub]
+Unter **Einstellungen → Daten → Einrichtung** findest du alle Datenquellen-Optionen zentral an einem Ort.
+:::

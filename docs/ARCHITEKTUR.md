@@ -1,6 +1,6 @@
 # EEDC Architektur-Dokumentation
 
-**Version 2.6.0** | Stand: März 2026
+**Version 2.7.1** | Stand: März 2026
 
 ---
 
@@ -188,13 +188,16 @@ eedc-homeassistant/
     │       │   ├── kostal_plenticore.py  # Kostal Plenticore / PIKO IQ
     │       │   ├── sonnen_batterie.py    # sonnenBatterie
     │       │   └── tasmota_sml.py        # Tasmota SML Stromzähler
-    │       └── import_parsers/            # Portal-Export CSV-Parser
-    │           ├── base.py               # ABC PortalExportParser
-    │           ├── registry.py           # @register_parser Pattern
-    │           ├── sma_sunny_portal.py   # SMA Sunny Portal CSV
-    │           ├── sma_echarger.py       # SMA eCharger CSV
-    │           ├── evcc.py               # EVCC Wallbox Sessions
-    │           └── fronius_solarweb.py   # Fronius Solarweb CSV
+    │       ├── import_parsers/            # Portal-Export CSV-Parser
+    │       │   ├── base.py               # ABC PortalExportParser
+    │       │   ├── registry.py           # @register_parser Pattern
+    │       │   ├── sma_sunny_portal.py   # SMA Sunny Portal CSV
+    │       │   ├── sma_echarger.py       # SMA eCharger CSV
+    │       │   ├── evcc.py               # EVCC Wallbox Sessions
+    │       │   └── fronius_solarweb.py   # Fronius Solarweb CSV
+    │       └── cloud_import/             # Cloud-Import Provider (NEU v2.7.0)
+    │           ├── base.py               # ABC CloudImportProvider
+    │           └── registry.py           # @register_provider Pattern
     │
     └── frontend/                # React Frontend
         ├── package.json
@@ -309,7 +312,7 @@ eedc-homeassistant/
 | durchschnittstemperatur | FLOAT | Wetter-API |
 | sonderkosten_euro | FLOAT | Manuelle Eingabe |
 | sonderkosten_beschreibung | VARCHAR(500) | Beschreibung der Sonderkosten |
-| datenquelle | VARCHAR(50) | manual, csv, ha_import |
+| datenquelle | VARCHAR(50) | manual, csv, ha_import, portal_import, cloud_import, cron_snapshot |
 | notizen | VARCHAR(1000) | Freitext |
 | created_at | DATETIME | Erstellungsdatum |
 | updated_at | DATETIME | Letztes Update |
@@ -559,6 +562,7 @@ Sonstiges [Eigenständig]
 | `/api/community` | community.py | **Community-Teilen & Benchmark** (NEU v2.0.3) |
 | `/api/connectors` | connectors.py | **Geräte-Connectors** (NEU v2.6.0) |
 | `/api/data-import` | data_import.py | **Portal-Import** CSV-Parser (NEU v2.6.0) |
+| `/api/cloud-import` | cloud_import.py | **Cloud-Import** Provider (NEU v2.7.0) |
 
 ### Wichtige Endpoints
 
@@ -621,20 +625,29 @@ POST   /api/sensor-mapping/{anlage_id}/init-start-values  # MQTT-Startwerte init
 - `manuell` - Manuelle Eingabe im Wizard
 - `keine` - Nicht erfassen
 
-#### Monatsabschluss API (NEU v1.1.0)
+#### Monatsabschluss API (NEU v1.1.0, erweitert v2.7.1)
 
 ```
-GET  /api/monatsabschluss/{anlage_id}/{jahr}/{monat}    # Status + Vorschläge
-POST /api/monatsabschluss/{anlage_id}/{jahr}/{monat}    # Abschluss durchführen
-GET  /api/monatsabschluss/naechster/{anlage_id}         # Nächster offener Monat
-GET  /api/monatsabschluss/historie/{anlage_id}          # Letzte Abschlüsse
+GET  /api/monatsabschluss/{anlage_id}/{jahr}/{monat}              # Status + Vorschläge
+POST /api/monatsabschluss/{anlage_id}/{jahr}/{monat}              # Abschluss durchführen
+POST /api/monatsabschluss/{anlage_id}/{jahr}/{monat}/cloud-fetch  # Cloud-Daten abrufen (NEU v2.7.1)
+GET  /api/monatsabschluss/naechster/{anlage_id}                   # Nächster offener Monat
+GET  /api/monatsabschluss/historie/{anlage_id}                    # Letzte Abschlüsse
 ```
+
+**Response-Felder (erweitert v2.7.1):**
+- `cloud_import_konfiguriert` - Cloud-Provider mit Credentials vorhanden
+- `portal_import_vorhanden` - Portal-Daten für diesen Monat in DB
+- `datenquelle` - Herkunft der vorhandenen Werte (manual, csv, portal_import, cloud_import, etc.)
 
 **VorschlagService liefert intelligente Vorschläge:**
+- `ha_sensor` (Konfidenz 95%) - Automatisch aus HA-Statistik
+- `local_connector` (Konfidenz 90%) - Aus Geräte-Connector-Snapshots
 - `vormonat` (Konfidenz 80%) - Wert vom Vormonat
 - `vorjahr` (Konfidenz 70%) - Wert vom gleichen Monat im Vorjahr
 - `berechnung` (Konfidenz 60%) - COP/EV-Quote basierte Berechnung
 - `durchschnitt` (Konfidenz 50%) - Durchschnitt aller vorhandenen Werte
+- `parameter` (Konfidenz 30%) - Aus Investitions-Parametern geschätzt
 
 #### Scheduler API (NEU v1.1.0)
 
@@ -761,16 +774,23 @@ URLs im Browser erscheinen als `/#/cockpit` statt `/cockpit`.
 ├── /monatsabschluss/:anlageId/:jahr/:monat → MonatsabschlussWizard (Monat)
 │
 └── /einstellungen
-    ├── /anlage         → Anlagen.tsx
-    ├── /strompreise    → Strompreise.tsx
-    ├── /investitionen  → Investitionen.tsx
-    ├── /monatsdaten    → Monatsdaten.tsx
-    ├── /import         → Import.tsx
-    ├── /demo           → Import.tsx (Demo-Sektion)
-    ├── /pvgis          → PVGISSettings.tsx
-    ├── /ha-import      → HAImportSettings.tsx
-    ├── /ha-export      → HAExportSettings.tsx
-    └── /allgemein      → Settings.tsx
+    ├── /anlage              → Anlagen.tsx
+    ├── /strompreise         → Strompreise.tsx
+    ├── /investitionen       → Investitionen.tsx
+    ├── /solarprognose       → PVGISSettings.tsx
+    ├── /monatsdaten         → Monatsdaten.tsx
+    ├── /monatsabschluss     → MonatsabschlussWizard.tsx
+    ├── /einrichtung         → Einrichtung.tsx (Hub, NEU v2.7.0)
+    ├── /import              → Import.tsx
+    ├── /portal-import       → PortalImport.tsx
+    ├── /cloud-import        → CloudImport.tsx
+    ├── /connector           → ConnectorSetup.tsx
+    ├── /sensor-mapping      → SensorMappingWizard.tsx
+    ├── /ha-statistik-import → HAStatistikImport.tsx
+    ├── /ha-export           → HAExportSettings.tsx
+    ├── /allgemein           → Settings.tsx
+    ├── /backup              → Backup.tsx (NEU v2.7.0)
+    └── /community           → CommunityShare.tsx
 ```
 
 ### Komponenten-Hierarchie
@@ -784,11 +804,12 @@ main.tsx
             └── Layout.tsx
                 ├── TopNavigation.tsx
                 │   ├── Logo
-                │   ├── MainTabs (Cockpit, Auswertungen, Community, Aussichten)
+                │   ├── MainTabs (Cockpit, Auswertungen, Aussichten, Community)
+                │   ├── MonatsabschlussQuickIcon (mit Badge)
                 │   ├── SettingsDropdown (5 Kategorien)
                 │   └── ThemeToggle
                 │
-                ├── SubTabs.tsx (kontextabhängig)
+                ├── SubTabs.tsx (kontextabhängig, gruppen-aware)
                 │
                 └── <Outlet /> (React Router)
                     └── [Page Component]

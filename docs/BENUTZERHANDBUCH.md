@@ -1,6 +1,6 @@
 # EEDC Benutzerhandbuch
 
-**Version 2.6.0** | Stand: März 2026
+**Version 2.7.1** | Stand: März 2026
 
 ---
 
@@ -207,10 +207,16 @@ Die horizontale Navigation enthält vier Hauptbereiche:
 |---------|----------|
 | **Cockpit** | Übersicht mit KPIs, Energie-Fluss und Charts |
 | **Auswertungen** | Detaillierte Analysen in 6 Tabs |
-| **Community** | Anonymer Benchmark-Vergleich mit anderen PV-Anlagen |
 | **Aussichten** | Prognosen: 7-Tage, Langfristig, Trend, Finanzen |
+| **Community** | Anonymer Benchmark-Vergleich mit anderen PV-Anlagen |
 
-Plus ein Dropdown-Menü für **Einstellungen**.
+Plus ein Dropdown-Menü für **Einstellungen** und ein **Monatsabschluss-Schnellzugriff** (Kalender-Icon mit Badge).
+
+### Monatsabschluss-Schnellzugriff (NEU v2.7.0)
+
+Rechts neben den Haupttabs zeigt ein Kalender-Icon den Status des Monatsabschlusses an:
+- **Roter Punkt** (Badge): Ein Monat steht zur Erfassung bereit
+- **Klick**: Öffnet direkt den Monatsabschluss-Wizard
 
 ### Einstellungen-Dropdown
 
@@ -220,32 +226,37 @@ Das Dropdown-Menü ist in fünf Kategorien unterteilt:
 - Anlage – PV-Anlage bearbeiten
 - Strompreise – Tarife verwalten
 - Investitionen – Komponenten konfigurieren
+- Solarprognose – PVGIS-Prognose und Wetter-Provider
 
 **Daten:**
 - Monatsdaten – Energiedaten eingeben/bearbeiten
 - Monatsabschluss – Geführter Monatsabschluss-Wizard
-- Import – CSV-Import/Export
-- Datenerfassung – Automatische Datenerfassung konfigurieren
-- Demo-Daten – Testdaten laden
-
-**System:**
-- Solarprognose – PVGIS-Prognose und Wetter-Provider
-- Allgemein – Version, Status
+- Einrichtung – Datenquellen konfigurieren (Hub-Seite, NEU v2.7.0)
 
 **Home Assistant** (nur bei HA-Nutzung sichtbar):
 - Sensor-Zuordnung – HA-Sensoren zu EEDC-Feldern zuordnen
 - Statistik-Import – Bulk-Import aus HA-Langzeitstatistik
 - MQTT-Export – MQTT Auto-Discovery Konfiguration
 
+**System:**
+- Allgemein – Version, Status
+- Backup – Datenbank-Sicherung
+
 **Community:**
 - Daten teilen – Anonyme Daten an Community-Server senden
 
 ### Sub-Navigation (kontextabhängig)
 
-Unter der Hauptnavigation erscheinen kontextabhängige Links:
+Unter der Hauptnavigation erscheinen kontextabhängige Sub-Tabs, gruppiert nach Kategorie:
 
 **Cockpit Sub-Seiten:**
 - Übersicht | PV-Anlage | E-Auto | Wärmepumpe | Speicher | Wallbox | Balkonkraftwerk | Sonstiges
+
+**Einstellungen Sub-Tabs** (NEU v2.7.0):
+Zeigen alle Tabs der aktuellen Gruppe mit Gruppen-Label. Z.B. bei „Monatsdaten":
+- `DATEN` | Monatsdaten | Monatsabschluss | Einrichtung
+
+Die Sub-Wizards (Import, Portal-Import, Cloud-Import, Connector-Setup) sind über die Einrichtung-Hub-Seite erreichbar und zeigen ebenfalls die Daten-Gruppe.
 
 (Jede Komponente hat ein eigenes Dashboard mit spezifischen KPIs.)
 
@@ -749,15 +760,45 @@ Diese Seite kombiniert PVGIS-Langfristprognose mit Wetter-Provider-Einstellungen
 - **API-Status**: Backend-Verbindung prüfen
 - **Datenbank-Statistiken**: Anzahl Datensätze
 
+### 9.7 Backup (NEU v2.7.0)
+
+- **Datenbank-Sicherung**: Download der SQLite-Datenbank
+- Erreichbar unter Einstellungen → System → Backup
+
 ---
 
 ## 10. Datenerfassung
 
-Es gibt drei Wege, Daten in eedc zu bekommen:
+### Einrichtung-Hub (NEU v2.7.0)
+
+**Pfad**: Einstellungen → Daten → Einrichtung
+
+Die Einrichtung-Hub-Seite ist die zentrale Anlaufstelle für die Konfiguration aller Datenquellen. Sie zeigt vier Karten:
+
+| Karte                    | Beschreibung                                    | Ziel                  |
+|--------------------------|------------------------------------------------|----------------------|
+| **HA Sensor-Zuordnung**  | HA-Sensoren den EEDC-Feldern zuordnen           | Sensor-Mapping-Wizard |
+| **Geräte-Connectors**    | Direkte Verbindung zu lokalen Geräten           | Connector-Setup       |
+| **Cloud-Import**         | Daten aus Hersteller-Cloud-APIs abrufen         | Cloud-Import-Wizard   |
+| **CSV/JSON Import/Export** | Personalisierte CSV-Vorlage, Portal-CSV, JSON | Import-Seite          |
+
+Jede Karte zeigt den aktuellen Konfigurationsstatus (z.B. "3 Sensoren zugeordnet", "SMA ennexOS konfiguriert").
+
+### Datenquellen im Monatsabschluss (NEU v2.7.1)
+
+Der Monatsabschluss-Wizard zeigt den Status aller konfigurierten Datenquellen als farbige Chips:
+- **HA-Sensor** (blau) – Home Assistant Sensor-Mapping
+- **Connector** (grün) – Geräte-Connector
+- **Cloud** (violett) – Cloud-Import-Provider
+- **Portal-Import** (smaragd) – Portal-CSV-Daten vorhanden
+
+Wenn keine Datenquelle konfiguriert ist, erscheint ein Hinweis mit Link zur Einrichtung-Seite.
+
+Es gibt mehrere Wege, Daten in eedc zu bekommen:
 
 ### 10.1 Manuelles Formular
 
-**Pfad**: Einstellungen → Monatsdaten → "Neu" Button
+**Pfad**: Einstellungen → Daten → Monatsdaten → "Neu" Button
 
 Das Formular zeigt dynamisch die relevanten Felder:
 
@@ -906,7 +947,7 @@ Neben dem JSON-Export gibt es jetzt einen **PDF-Export** (orangefarbenes Dokumen
 
 ### 10.3 Portal-Import (NEU v2.6.0)
 
-**Pfad**: Einstellungen → Datenerfassung → Portal-Import
+**Pfad**: Einstellungen → Daten → Einrichtung → CSV/JSON Import/Export → Portal-Import
 
 Upload von CSV-Dateien aus Hersteller-Portalen. EEDC erkennt das Format automatisch.
 
@@ -930,7 +971,7 @@ Upload von CSV-Dateien aus Hersteller-Portalen. EEDC erkennt das Format automati
 
 ### 10.4 Geräte-Connectors (NEU v2.6.0)
 
-**Pfad**: Einstellungen → Datenerfassung → Connector-Setup
+**Pfad**: Einstellungen → Daten → Einrichtung → Geräte-Connectors
 
 Direkte Verbindung zu lokalen Geräten im Netzwerk. Connectors lesen kumulative kWh-Zählerstände aus und berechnen daraus Monatswerte.
 
@@ -958,11 +999,28 @@ Direkte Verbindung zu lokalen Geräten im Netzwerk. Connectors lesen kumulative 
 
 **Geräte mit (*) im Dropdown** sind noch nicht mit echten Geräten verifiziert.
 
-### 10.5 Demo-Daten
+### 10.5 Cloud-Import (NEU v2.7.0)
+
+**Pfad**: Einstellungen → Daten → Einrichtung → Cloud-Import
+
+Direkte Verbindung zu Hersteller-Cloud-APIs. Cloud-Provider holen historische Energiedaten über API-Zugang.
+
+**Einrichtung:**
+
+1. Provider auswählen (z.B. SMA ennexOS Cloud)
+2. API-Zugangsdaten eingeben (Benutzername, Passwort, ggf. Anlage-ID)
+3. Verbindung testen — zeigt erkannte Geräte und verfügbare Daten
+4. Speichern — Credentials werden lokal gespeichert
+
+**Nutzung im Monatsabschluss:**
+
+Wenn Cloud-Import konfiguriert ist, zeigt der Monatsabschluss-Wizard einen „Cloud-Daten abrufen"-Button. Damit werden die Monatswerte direkt aus der Cloud-API geladen, ohne sie vorher in die Datenbank zu schreiben.
+
+### 10.6 Demo-Daten
 
 Zum Ausprobieren ohne echte Daten:
 
-**Pfad**: Einstellungen → Demo-Daten
+**Pfad**: Einstellungen → Daten → Einrichtung → CSV/JSON Import/Export → Demo-Daten
 
 - Generiert realistische Beispieldaten für 2 Jahre
 - Inkludiert alle Komponenten-Typen
@@ -1058,31 +1116,62 @@ Bei der Sensor-Auswahl werden automatisch alle verfügbaren HA-Sensoren angezeig
 
 ## 12. Monatsabschluss-Wizard
 
-Der **Monatsabschluss-Wizard** führt dich durch die monatliche Datenerfassung mit intelligenten Vorschlägen.
+Der **Monatsabschluss-Wizard** ist die zentrale Anlaufstelle für die monatliche Datenerfassung. Er zeigt alle konfigurierten Datenquellen, bietet intelligente Vorschläge und macht die Herkunft der Daten transparent.
 
 ### 12.1 Wizard starten
 
-**Pfad**: Einstellungen → Monatsabschluss (im Daten-Bereich)
+**Pfad**: Einstellungen → Daten → Monatsabschluss
 
-Oder direkt über die URL: `/monatsabschluss`
+Oder direkt über das **Kalender-Icon** in der Hauptnavigation (mit rotem Badge wenn ein Monat offen ist).
 
-### 12.2 Funktionsweise
+### 12.2 Datenquellen-Status (NEU v2.7.1)
 
-#### Automatische Vorschläge
+Am Anfang des Wizards zeigt eine Chip-Leiste den Status aller Datenquellen:
+
+| Chip | Farbe | Bedeutung |
+|------|-------|-----------|
+| **HA-Sensor** | Blau | Home Assistant Sensor-Mapping konfiguriert |
+| **Connector** | Grün | Geräte-Connector konfiguriert |
+| **Cloud** | Violett | Cloud-Import-Provider konfiguriert |
+| **Portal-Import** | Smaragd | Portal-Daten für diesen Monat vorhanden |
+
+Grauer Chip = nicht konfiguriert.
+
+**Keine Quellen konfiguriert?** Es erscheint ein Info-Hinweis mit direktem Link zur Einrichtung-Seite.
+
+**Datenherkunft:** Wenn bereits Werte aus einer automatischen Quelle vorhanden sind (z.B. Portal-Import, Cloud-Import, Cron-Snapshot), wird die Herkunft unter den Buttons angezeigt.
+
+### 12.3 Daten laden
+
+Je nach konfigurierter Datenquelle stehen bis zu drei Lade-Buttons zur Verfügung:
+
+| Button | Quelle | Beschreibung |
+|--------|--------|--------------|
+| **HA-Statistik laden** | Home Assistant | Werte aus HA-Langzeitstatistik für den Monat |
+| **Connector-Werte laden** | Geräte-Connector | Delta-Berechnung aus Zählerstand-Snapshots |
+| **Cloud-Daten abrufen** | Cloud-API | Live-Abruf aus der Hersteller-Cloud (NEU v2.7.1) |
+
+Jeder Button zeigt nach dem Laden an, wie viele Felder befüllt wurden.
+
+### 12.4 Automatische Vorschläge
 
 Für jedes Feld werden automatisch Vorschläge berechnet:
 
 | Quelle | Konfidenz | Beschreibung |
 |--------|-----------|--------------|
-| **Vormonat** | 80% | Wert vom Vormonat (beste Quelle für kontinuierliche Werte) |
+| **HA-Sensor** | 95% | Automatisch aus HA-Statistik |
+| **Connector** | 90% | Aus Geräte-Connector-Snapshots |
+| **Vormonat** | 80% | Wert vom Vormonat |
 | **Vorjahr** | 70% | Gleicher Monat im Vorjahr (saisonale Korrelation) |
 | **Berechnung** | 60% | COP- oder EV-Quote-basierte Berechnung |
 | **Durchschnitt** | 50% | Durchschnitt aller vorhandenen Werte |
+| **Parameter** | 30% | Aus Investitions-Parametern geschätzt |
 
 #### Vorschläge nutzen
 
 Jedes Feld zeigt:
-- **Aktueller Wert** (falls vorhanden)
+
+- **Aktueller Wert** (falls vorhanden) mit Herkunftsanzeige
 - **Vorschlag** mit Quelle und Konfidenz
 - **Übernehmen-Button** zum direkten Übernehmen
 - **Manuelles Eingabefeld** für Anpassungen
@@ -1090,20 +1179,15 @@ Jedes Feld zeigt:
 #### Workflow
 
 1. **Monat wählen** - Der nächste offene Monat wird vorgeschlagen
-2. **Basis-Daten prüfen** - Einspeisung, Netzbezug, PV-Erzeugung
-3. **Komponenten-Daten** - Speicher, Wärmepumpe, E-Auto, etc.
-4. **Speichern** - Alle Daten werden als Monatsdaten gespeichert
+2. **Daten laden** - HA, Connector oder Cloud-Werte abrufen
+3. **Basis-Daten prüfen** - Einspeisung, Netzbezug, PV-Erzeugung
+4. **Komponenten-Daten** - Speicher, Wärmepumpe, E-Auto, etc.
+5. **Speichern** - Alle Daten werden als Monatsdaten gespeichert
 
-### 12.3 Sensor-Werte aus HA
-
-Wenn Sensor-Mapping konfiguriert ist:
-- Werte werden automatisch aus HA abgerufen
-- Bei `manuell`-Strategie: Vorschläge aus historischen Daten
-- Bei `sensor`-Strategie: Aktueller Sensor-Wert als Vorschlag
-
-### 12.4 Historie
+### 12.5 Historie
 
 Die letzten Abschlüsse werden angezeigt:
+
 - Monat/Jahr
 - Abschlussdatum
 - Wichtige Kennzahlen

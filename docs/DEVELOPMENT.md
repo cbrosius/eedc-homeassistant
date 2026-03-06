@@ -1,6 +1,6 @@
 # EEDC Development Guide
 
-**Version 2.6.0** | Stand: März 2026
+**Version 2.7.1** | Stand: März 2026
 
 ---
 
@@ -229,8 +229,9 @@ eedc-homeassistant/
         │   │   ├── CommunityVergleich.tsx    # Community (Hauptmenüpunkt, 6 Tabs)
         │   │   ├── Aussichten.tsx            # Prognosen (4 Tabs)
         │   │   ├── PVAnlageDashboard.tsx     # PV String-Vergleich (SOLL-IST)
+        │   │   ├── Einrichtung.tsx           # Datenquellen-Hub (NEU v2.7.0)
         │   │   ├── SensorMappingWizard.tsx   # Sensor-Mapping
-        │   │   ├── MonatsabschlussWizard.tsx # Monatsabschluss
+        │   │   ├── MonatsabschlussWizard.tsx # Monatsabschluss (Datenquellen-Chips, Cloud-Fetch)
         │   │   ├── HAStatistikImport.tsx     # HA-Statistik Bulk-Import (v2.0.0)
         │   │   └── aussichten/               # Tab-Komponenten
         │   │       ├── KurzfristTab.tsx
@@ -329,13 +330,14 @@ GET    /api/sensor-mapping/{anlage_id}/status             # Kurzstatus
 POST   /api/sensor-mapping/{anlage_id}/init-start-values  # MQTT-Startwerte init
 ```
 
-### Monatsabschluss API (NEU v1.1.0)
+### Monatsabschluss API (NEU v1.1.0, erweitert v2.7.1)
 
 ```
-GET  /api/monatsabschluss/{anlage_id}/{jahr}/{monat}    # Status + Vorschläge
-POST /api/monatsabschluss/{anlage_id}/{jahr}/{monat}    # Abschluss durchführen
-GET  /api/monatsabschluss/naechster/{anlage_id}         # Nächster offener Monat
-GET  /api/monatsabschluss/historie/{anlage_id}          # Letzte Abschlüsse
+GET  /api/monatsabschluss/{anlage_id}/{jahr}/{monat}              # Status + Vorschläge
+POST /api/monatsabschluss/{anlage_id}/{jahr}/{monat}              # Abschluss durchführen
+POST /api/monatsabschluss/{anlage_id}/{jahr}/{monat}/cloud-fetch  # Cloud-Daten abrufen (NEU v2.7.1)
+GET  /api/monatsabschluss/naechster/{anlage_id}                   # Nächster offener Monat
+GET  /api/monatsabschluss/historie/{anlage_id}                    # Letzte Abschlüsse
 ```
 
 ### Import/Export API (erweitert in beta.8)
@@ -382,4 +384,4 @@ POST /api/scheduler/monthly-snapshot                        # Manueller Monatswe
 
 ---
 
-*Letzte Aktualisierung: Februar 2026*
+*Letzte Aktualisierung: März 2026*

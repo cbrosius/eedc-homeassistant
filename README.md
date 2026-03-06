@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 2.5.1</strong> | Standalone PV-Analyse mit optionaler Home Assistant Integration
+  <strong>Version 2.7.1</strong> | Standalone PV-Analyse mit optionaler Home Assistant Integration
 </p>
 
 <p align="center">
@@ -52,13 +52,18 @@
 - **Finanz-Prognose** mit Amortisations-Fortschritt und Mehrkosten-Ansatz
 
 ### Datenerfassung
+- **Einrichtung-Hub** (NEU v2.7.0) - Zentrale Seite zur Konfiguration aller Datenquellen
+- **Monatsabschluss-Wizard** - Zentrale Anlaufstelle für monatliche Datenerfassung mit Datenquellen-Status, Cloud-Fetch und Herkunftsanzeige
+- **Monatsabschluss-Schnellzugriff** (NEU v2.7.0) - Kalender-Icon mit Badge in der Hauptnavigation
 - **Manuelles Formular** mit dynamischen Komponenten-Feldern
 - **CSV-Import** mit personalisierten Spalten und Plausibilitätsprüfung
+- **Portal-Import** (NEU v2.6.0) - CSV-Upload von SMA Sunny Portal, SMA eCharger, EVCC, Fronius Solarweb
+- **Cloud-Import** (NEU v2.7.0) - Daten direkt aus Hersteller-Cloud-APIs abrufen
+- **9 Geräte-Connectors** (NEU v2.6.0) - Direkte Verbindung zu lokalen Geräten im Netzwerk
+- **Sensor-Mapping-Wizard** - Home Assistant Sensoren den EEDC-Feldern zuordnen
+- **HA-Statistik Import** - Automatischer Import historischer Monatswerte aus HA
 - **Wetter-Auto-Fill** via Open-Meteo / PVGIS TMY
 - **Demo-Daten** zum Ausprobieren
-- **Sensor-Mapping-Wizard** - Home Assistant Sensoren den EEDC-Feldern zuordnen
-- **Monatsabschluss-Wizard** - Geführte monatliche Datenerfassung mit Vorschlägen
-- **HA-Statistik Import** (NEU v2.0.0) - Automatischer Import historischer Monatswerte aus HA
 
 ### Investitions-Management
 - **Parent-Child Beziehungen**: PV-Module → Wechselrichter, DC-Speicher → Hybrid-WR
@@ -251,6 +256,9 @@ Der **Monatsabschluss-Wizard** unterstützt dich bei der monatlichen Datenerfass
 - [x] **Website** - Astro Starlight mit Docs auf GitHub Pages
 - [x] **PVGIS Horizontprofil** - Geländeprofil für genauere Ertragsprognosen (v2.5.0)
 - [x] **Social-Media-Textvorlage** - Kopierfertige Monatsübersicht für Social Media (v2.5.0)
+- [x] **Portal-Import & Connectors** - CSV-Upload aus Herstellerportalen + 9 Geräte-Connectors (v2.6.0)
+- [x] **Einrichtung-Hub & Navigation** - Zentrale Datenquellen-Konfiguration, überarbeitetes Menü (v2.7.0)
+- [x] **Cloud-Import & Wizard-Upgrade** - Cloud-API-Abruf, Datenquellen-Status im Monatsabschluss (v2.7.1)
 - [ ] KI-gestützte Insights
 
 ---
