@@ -7,6 +7,25 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
+## [2.7.0] - 2026-03-06
+
+### Hinzugefügt
+
+- **Cloud-Import** – Historische Energiedaten direkt aus Hersteller-Cloud-APIs importieren
+  - Generische Cloud-Import-Provider-Architektur (ABC + Registry, analog zu Portal-Import)
+  - EcoFlow PowerOcean als erster Provider (Developer API mit HMAC-SHA256 Auth) (*)
+  - 4-Schritt-Wizard: Verbinden → Zeitraum → Vorschau → Import
+  - Credentials pro Anlage speicherbar für wiederholte Imports
+  - Wiederverwendung des bestehenden Apply-Mechanismus (Portal-Import)
+  - Datenquelle-Tracking: `cloud_import` als neue Quelle neben `portal_import`
+- **Exakte Azimut-Eingabe** – PV-Module können jetzt gradgenau ausgerichtet werden (nicht nur 45°-Schritte)
+  - Neues Eingabefeld "Azimut (°)" synchronisiert mit dem bestehenden Dropdown
+  - Alle PVGIS-Berechnungen nutzen den exakten Wert
+
+(*) Ungetestet – basiert auf Hersteller-API-Dokumentation, indexName-Mapping muss mit echten Daten verifiziert werden
+
+---
+
 ## [2.6.0] - 2026-03-05
 
 ### Hinzugefügt

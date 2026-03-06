@@ -7,17 +7,24 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ---
 
-## [2.6.1] - 2026-03-05
+## [2.7.0] - 2026-03-06
 
-### Behoben
+### Hinzugefügt
 
-- **Rezertifizierung der Berechnungen** – `betriebskosten_jahr` (Wartung, Versicherung) wird jetzt korrekt in allen Finanzberechnungen berücksichtigt:
-  - ROI-Dashboard: Amortisation und ROI p.a. berücksichtigen jetzt Betriebskosten pro Investition
-  - Cockpit: Kumulative Ersparnis wird um anteilige Betriebskosten reduziert
-  - Aussichten/Finanzen: Jahres-Netto-Ertrag und bisherige Erträge berücksichtigen Betriebskosten
-  - HA-Export: Jahresersparnis und ROI-Berechnung korrigiert
-  - PDF-Export: Rendite und Finanz-Prognose korrigiert
-- **BERECHNUNGEN.md** – Dokumentation aller Formeln aktualisiert (ROI, Cockpit, Aussichten)
+- **Cloud-Import** – Historische Energiedaten direkt aus Hersteller-Cloud-APIs importieren
+  - Generische Cloud-Import-Provider-Architektur (ABC + Registry, analog zu Portal-Import)
+  - EcoFlow PowerOcean als erster Provider (Developer API mit HMAC-SHA256 Auth) (*)
+  - 4-Schritt-Wizard: Verbinden → Zeitraum → Vorschau → Import
+  - Credentials pro Anlage speicherbar für wiederholte Imports
+  - Wiederverwendung des bestehenden Apply-Mechanismus (Portal-Import)
+  - Datenquelle-Tracking: `cloud_import` als neue Quelle neben `portal_import`
+- **Exakte Azimut-Eingabe** – PV-Module können jetzt gradgenau ausgerichtet werden (nicht nur 45°-Schritte)
+  - Neues Eingabefeld "Azimut (°)" synchronisiert mit dem bestehenden Dropdown
+  - Alle PVGIS-Berechnungen nutzen den exakten Wert
+
+(*) Ungetestet – basiert auf Hersteller-API-Dokumentation, indexName-Mapping muss mit echten Daten verifiziert werden
+
+---
 
 ## [2.6.0] - 2026-03-05
 
