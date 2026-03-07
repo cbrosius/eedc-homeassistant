@@ -23,7 +23,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
   - Auto-Detect für Spaltenbezeichnungen (deutsch + englisch)
   - Einheit wählbar (Wh/kWh/MWh) mit automatischer Umrechnung
   - Dezimalzeichen konfigurierbar (Auto/Punkt/Komma)
-  - Kombinierte Datumsspalte (z.B. "2024-01") oder separate Jahr/Monat-Spalten
+  - Kombinierte Datumsspalte oder separate Jahr/Monat-Spalten
   - Mapping als wiederverwendbares Template speichern/laden
   - 4-Schritt-Wizard: Upload → Mapping → Vorschau → Import
   - Neue Kachel "Eigene Datei importieren" auf der Einrichtung-Seite
@@ -31,8 +31,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 ### Entfernt
 
 - **Kostal Plenticore** und **SMA Local** Cloud-Import-Provider entfernt
-  (liefern nur aktuelle Zählerstände, keine historischen Monatsdaten –
-  für diese Geräte die Geräte-Connectors verwenden)
+  (nur aktuelle Zählerstände, keine historischen Monatsdaten)
 
 (*) Ungetestet – basiert auf Hersteller-API-Dokumentation
 

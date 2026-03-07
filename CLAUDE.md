@@ -6,7 +6,7 @@
 
 **eedc** (Energie Effizienz Data Center) - Standalone PV-Analyse mit optionaler HA-Integration.
 
-**Version:** 2.7.1 | **Status:** Stable Release
+**Version:** 2.8.0 | **Status:** Stable Release
 
 ## Verbundene Repositories
 
@@ -165,6 +165,12 @@ EEDC Add-on                              Community Server
 > Die alten `ha_sensor_*` Felder im Anlage-Model dürfen NICHT aus der DB/dem Model entfernt werden (bestehende Installationen). Neuer Code nutzt ausschließlich `sensor_mapping`.
 
 ## Letzte Änderungen
+
+**v2.8.0** - Cloud-Import-Provider + Custom-Import:
+
+- **5 neue Cloud-Import-Provider:** SolarEdge, Fronius SolarWeb, Huawei FusionSolar, Growatt, Deye/Solarman (alle ungetestet)
+- **Custom-Import:** Beliebige CSV/JSON mit Feld-Mapping importieren, Templates speicherbar
+- **Kostal/SMA Local entfernt** (nur Zählerstände, keine historischen Daten)
 
 **v2.7.1** - Monatsabschluss als zentrale Datenerfassungs-Anlaufstelle:
 
